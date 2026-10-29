@@ -523,6 +523,18 @@ E.tweetTargets = function (sym, account, tweets) {
   for (const t of own) if (!seen.has(lc(t.handle))) add('extra', t.handle, t.role === 'ceo' ? 'Directivo' : 'Otra cuenta', t.status);
   return out;
 };
+
+/* Orden de la columna: 'recent' (más recientes), 'likes-desc' (Hi corazones), 'likes-asc' (Low corazones).
+   Sin métricas = 0 likes. Empates: más nuevo primero (y luego por id). No modifica la lista de entrada. */
+E.TWEET_SORTS = { recent: 'Más recientes', 'likes-desc': 'Hi corazones', 'likes-asc': 'Low corazones' };
+E.tweetLikes = t => { const v = t && t.metrics ? Number(t.metrics.likes) : 0; return isFinite(v) && v > 0 ? v : 0; };
+E.sortTweets = function (list, mode) {
+  const byDate = (a, b) => (b.ts - a.ts) || (String(a.id) < String(b.id) ? 1 : String(a.id) > String(b.id) ? -1 : 0);
+  const arr = (Array.isArray(list) ? list : []).slice();
+  if (mode === 'likes-desc') return arr.sort((a, b) => (E.tweetLikes(b) - E.tweetLikes(a)) || byDate(a, b));
+  if (mode === 'likes-asc') return arr.sort((a, b) => (E.tweetLikes(a) - E.tweetLikes(b)) || byDate(a, b));
+  return arr.sort(byDate);
+};
 E.newTweetIds = (prevIds, list) => list.filter(t => !prevIds.has(t.id)).map(t => t.id);
 
 /* conveniencia: analizar un activo completo */

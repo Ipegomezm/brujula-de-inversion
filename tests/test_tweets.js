@@ -46,4 +46,14 @@ ok(got && got[0] === 'tweets.json' && JSON.stringify(got[1]) === JSON.stringify(
   ok(E.tweetTargets('BTC-USD', { company_handle: null, company_status: 'sin cuenta', ceo_handle: null, ceo_status: 'n/a' }, list).every(t => !t.tweet), 'activo sin cuentas: nada activo');
   // con los datos publicados: TSLA tiene empresa y CEO
   const real = E.tweetTargets('TSLA', null, PD.tweets); console.log('   TSLA en data/tweets.json:', real.map(t => `${t.kind}@${t.handle}=${t.tweet ? t.tweet.id : t.reason}`).join(' ')); }
+
+// orden (E.sortTweets)
+{ const T = (id, hrs, likes) => ({ id, ts: now - hrs * 36e5, metrics: likes == null ? null : { likes } });
+  const L = [T('a', 5, 10), T('b', 1, 3), T('c', 2, null), T('d', 3, 10), T('e', 4, 0), T('f', 1, 3)], ids = x => x.map(t => t.id).join('');
+  ok(ids(E.sortTweets(L, 'recent')) === 'fbcdea', 'Más recientes: por fecha (empate → id)');
+  ok(ids(E.sortTweets(L, 'likes-desc')) === 'dafbce', 'Hi corazones: más likes primero; empates por fecha; sin métricas = 0 al final');
+  ok(ids(E.sortTweets(L, 'likes-asc')) === 'cefbda', 'Low corazones: menos likes primero; sin métricas (0) al principio');
+  ok(ids(L) === 'abcdef' && ids(E.sortTweets(L, 'raro')) === 'fbcdea', 'no modifica la entrada; modo desconocido = recientes');
+  ok(E.tweetLikes({ metrics: { likes: '7' } }) === 7 && E.tweetLikes({ metrics: { likes: -3 } }) === 0 && E.tweetLikes({}) === 0, 'likes: texto numérico, negativos y faltantes');
+  const R = E.sortTweets(PD.tweets, 'likes-desc'); ok(R.length === PD.tweets.length && R.every((t, i) => !i || E.tweetLikes(R[i - 1]) >= E.tweetLikes(t)), `datos publicados ordenados por likes (máx ${E.tweetLikes(R[0])}, @${R[0].handle})`); }
 console.log(fails ? fails + ' FALLOS' : 'TODAS LAS PRUEBAS DE TWEETS PASAN'); process.exit(fails ? 1 : 0);

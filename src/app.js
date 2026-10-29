@@ -395,7 +395,7 @@ function renderTweets() {
   sel.innerHTML = `<option value="*">Todos los activos</option><option value="@board">Mi tablero</option>` + syms.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : '*';
   const f = { symbol: sel.value === '@board' ? board() : sel.value, role: $('#twRole').value, important: $('#twImp').checked };
-  const L = E.filterTweets(TW.list, f);
+  const L = E.sortTweets(E.filterTweets(TW.list, f), st.twSort in E.TWEET_SORTS ? st.twSort : 'recent');
   $('#twList').innerHTML = L.length ? L.map(t => `<article data-id="${E.escapeHtml(t.id)}" class="tweet${t.hl.important ? ' imp' : ''}${TW.fresh && TW.fresh.has(t.id) ? ' nuevo' : ''}">
     <div class="who"><b>${E.escapeHtml(t.author)}</b><span class="mute">@${E.escapeHtml(t.handle)}</span><span class="tag ${t.role === 'ceo' ? 'z' : 'n'}">${t.role === 'ceo' ? 'CEO' : 'Empresa'}</span><span class="tag p">${E.escapeHtml(t.symbol)}</span>${t.status === 'dudosa' ? '<span class="dud" title="No está confirmado que esta cuenta sea oficial">cuenta dudosa</span>' : ''}</div>
     ${t.hl.important ? `<div class="hl">★ Importante: ${t.hl.reasons.map(E.escapeHtml).join(' · ')}</div>` : t.hl.reasons.length ? `<div class="hl" style="color:var(--mute);font-weight:400">${t.hl.reasons.map(E.escapeHtml).join(' · ')}</div>` : ''}
@@ -431,6 +431,8 @@ function tweetsInit() {
   if (wide && st.twOpen !== false) document.body.classList.add('tw-on');
   $('#twToggle').onclick = () => { const on = document.body.classList.toggle('tw-on'); if (on) TW.unread = 0; if (matchMedia('(min-width:1300px)').matches) { st.twOpen = on; save(); } renderTweets(); };
   ['#twSym', '#twRole', '#twImp'].forEach(s => $(s).onchange = () => { TW.fresh = null; renderTweets(); });
+  $('#twSort').value = st.twSort in E.TWEET_SORTS ? st.twSort : 'recent';
+  $('#twSort').onchange = () => { st.twSort = $('#twSort').value; save(); TW.fresh = null; renderTweets(); $('#tw').scrollTop = 0; };
   loadTweets(true); TW.timer = setInterval(() => loadTweets(true), TW_POLL_MS);
 }
 

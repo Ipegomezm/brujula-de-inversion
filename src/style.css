@@ -56,7 +56,7 @@ canvas{width:100%;display:block;margin:6px 0}
 #tw .twh{position:sticky;top:0;background:var(--card);padding:10px 12px;border-bottom:1px solid var(--line);z-index:2}
 #tw .twh h2{font-size:1.15rem;margin:0;border:0;padding:0}
 #tw .ex{background:var(--red);color:#fff;font:700 1.05rem/1.2 var(--sans);text-align:center;padding:8px;border-radius:4px;margin:8px 0;letter-spacing:.04em}
-#tw .twf{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}#tw .twf select{font-size:.8rem;padding:2px 4px;max-width:9.5em}#tw .twf label{font-size:.78rem;display:flex;gap:3px;align-items:center}
+#tw .twf{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}#tw .twf select{font-size:.8rem;padding:2px 4px;max-width:9.5em}#tw #twSort{max-width:8.5em}#tw .twf label{font-size:.78rem;display:flex;gap:3px;align-items:center}
 #tw .tl{padding:0 12px 80px}
 .tweet{border-bottom:1px solid var(--line);padding:9px 0;animation:none}
 .tweet.nuevo{animation:slidein .6s ease-out;background:linear-gradient(90deg,var(--greenS),transparent 70%)}

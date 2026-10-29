@@ -115,3 +115,6 @@ Nota: `fetch_data.py` reemplaza `data/` al publicar, pero copia los archivos que
 de ese handle (sin distinguir mayúsculas). Sin tweet → botón desactivado con el motivo ("sin tweets recientes", "sin cuenta",
 "no tiene CEO"). Al tocar uno: se quitan los filtros, se abre la columna (cajón en el teléfono), se baja al tweet y se resalta ~3 s.
 Con `file://` no se lee `x_accounts.json` (no tiene gemelo `.js`): se usan solo las cuentas que aparecen en el feed.
+
+## Orden de la columna
+`Engine.sortTweets(lista, modo)`: `recent` (Más recientes, por defecto), `likes-desc` (Hi corazones), `likes-asc` (Low corazones), según `metrics.likes`; sin métricas = 0; empates: más nuevo primero. La elección se guarda en localStorage. Los tweets nuevos entran en su posición según el orden elegido (marcados como nuevos y sumados al contador si la columna está cerrada); los saltos desde el detalle quitan los filtros pero no cambian el orden.
