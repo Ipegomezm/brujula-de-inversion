@@ -27,7 +27,23 @@ ok(E.newTweetIds(new Set(['1', '2']), L).join() === '4', 'detecta tweets nuevos'
 const doc = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'tweets.json')));
 const PD = E.prepareTweets(doc, { now: Date.parse(doc.generated_at) });
 ok(PD.ok && PD.errors.length === 0 && PD.tweets.length === doc.tweets.length && (doc.source === 'ejemplo' || doc.source === 'x-public-reads'), `data/tweets.json válido (${PD.tweets.length} tweets, source=${doc.source}, importantes ${PD.tweets.filter(t => t.hl.important).length})`);
-ok(doc.source === 'ejemplo' ? doc.tweets.every(t => /EJEMPLO FICTICIO/.test(t.text) && /^EJEMPLO_/.test(t.handle)) : doc.tweets.every(t => !/^ejemplo-/.test(t.id) && !/^EJEMPLO_/.test(t.handle)), doc.source === 'ejemplo' ? 'todos los tweets de ejemplo dicen EJEMPLO FICTICIO' : 'datos reales: ningún tweet de ejemplo mezclado');
+ok(doc.source === 'ejemplo' ? doc.tweets.every(t => /EJEMPLO FICTICIO/.test(t.text) && /^EJEMPLO_/.test(t.handle)) : doc.tweets.every(t => !/^ejemplo-/.test(t.id) && !/^EJEMPLO_/.test(t.handle) && !/EJEMPLO FICTICIO/.test(t.text)), doc.source === 'ejemplo' ? 'todos los tweets de ejemplo dicen EJEMPLO FICTICIO' : 'datos reales: ningún tweet de ejemplo mezclado');
 const js = fs.readFileSync(path.join(__dirname, '..', 'data', 'tweets.js'), 'utf8'); let got; global.window = { __B: (k, o) => got = [k, o] }; eval(js);
 ok(got && got[0] === 'tweets.json' && JSON.stringify(got[1]) === JSON.stringify(doc), 'tweets.js = window.__B("tweets.json", <mismo JSON>)');
+
+// enlaces "último tweet" (E.tweetTargets)
+{ const mkT = (id, h, sym, role, hrs) => ({ id, handle: h, symbol: sym, role, status: 'confirmada', ts: now - hrs * 36e5, text: 'x', hl: { important: false, reasons: [] } });
+  const list = [mkT('9', 'Saylor', 'MSTR', 'ceo', 1), mkT('8', 'Strategy', 'MSTR', 'empresa', 2), mkT('7', 'strategy', 'MSTR', 'empresa', 5), mkT('6', 'elonmusk', 'TSLA', 'ceo', 3), mkT('5', 'otro_dir', 'MSTR', 'ceo', 4)];
+  const acc = { symbol: 'MSTR', company_handle: 'Strategy', company_status: 'confirmada', ceo_name: 'Phong Q. Le', ceo_handle: 'phongle', ceo_status: 'confirmada', extra_handles: [{ handle: 'saylor', role: 'Executive Chairman / fundador', status: 'confirmada' }] };
+  const T = E.tweetTargets('MSTR', acc, list), by = k => T.filter(t => t.kind === k);
+  ok(by('empresa')[0].tweet.id === '8', 'empresa: el tweet más reciente del handle (sin distinguir mayúsculas)');
+  ok(by('ceo')[0].tweet === null && by('ceo')[0].reason === 'sin tweets recientes' && by('ceo')[0].label === 'CEO · Phong Q. Le', 'CEO sin tweets → desactivado "sin tweets recientes"');
+  ok(by('extra').map(t => t.handle + ':' + (t.tweet && t.tweet.id)).join() === 'saylor:9,otro_dir:5', 'extras de x_accounts (@saylor) y cuentas del feed con ese símbolo');
+  const M = E.tweetTargets('MELI', { company_handle: 'MercadoLibre', ceo_handle: null, ceo_status: 'sin cuenta', extra_handles: [{ handle: 'marcos_galperin' }] }, []);
+  ok(M.find(t => t.kind === 'ceo').reason === 'sin cuenta' && M.every(t => !t.tweet), 'CEO sin cuenta → motivo "sin cuenta"; sin datos → todo desactivado');
+  const N = E.tweetTargets('TSLA', null, list);
+  ok(N.find(t => t.kind === 'ceo').tweet.id === '6' && N.find(t => t.kind === 'empresa').reason === 'sin tweets recientes', 'sin x_accounts: usa las cuentas del feed por símbolo; si no hay, "sin tweets recientes"');
+  ok(E.tweetTargets('BTC-USD', { company_handle: null, company_status: 'sin cuenta', ceo_handle: null, ceo_status: 'n/a' }, list).every(t => !t.tweet), 'activo sin cuentas: nada activo');
+  // con los datos publicados: TSLA tiene empresa y CEO
+  const real = E.tweetTargets('TSLA', null, PD.tweets); console.log('   TSLA en data/tweets.json:', real.map(t => `${t.kind}@${t.handle}=${t.tweet ? t.tweet.id : t.reason}`).join(' ')); }
 console.log(fails ? fails + ' FALLOS' : 'TODAS LAS PRUEBAS DE TWEETS PASAN'); process.exit(fails ? 1 : 0);

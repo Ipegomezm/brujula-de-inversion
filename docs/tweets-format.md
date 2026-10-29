@@ -108,3 +108,10 @@ Nota: `fetch_data.py` reemplaza `data/` al publicar, pero copia los archivos que
 `--per-handle N` (por defecto 40): máximo de tweets por cuenta dentro de la ventana; se quedan los más recientes. Evita que una cuenta muy activa (p. ej. @elonmusk) llene el tope de 500. `0` lo desactiva.
 
 `--handle-cap HANDLE=N` (repetible): tope propio para una cuenta, que pisa a `--per-handle`. Se aplica sobre todo el conjunto (lo nuevo + lo ya guardado con `--merge`), así que no se acumulan entre cargas. Ej.: `--handle-cap elonmusk=5` (decisión de Felipe). El handle no distingue mayúsculas y acepta `@`.
+
+## Enlaces "Último tweet en X" en el detalle de cada activo
+`Engine.tweetTargets(símbolo, fila_de_x_accounts|null, tweets)` devuelve empresa, CEO y cuentas extra (`extra_handles`, p. ej.
+@saylor en MSTR, @marcos_galperin en MELI) más cualquier otra cuenta del feed con ese símbolo; para cada una, el tweet más reciente
+de ese handle (sin distinguir mayúsculas). Sin tweet → botón desactivado con el motivo ("sin tweets recientes", "sin cuenta",
+"no tiene CEO"). Al tocar uno: se quitan los filtros, se abre la columna (cajón en el teléfono), se baja al tweet y se resalta ~3 s.
+Con `file://` no se lee `x_accounts.json` (no tiene gemelo `.js`): se usan solo las cuentas que aparecen en el feed.

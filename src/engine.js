@@ -499,6 +499,30 @@ E.prepareTweets = function (doc, opt = {}) {   // valida, deduplica, ordena (nue
 };
 E.filterTweets = (list, f = {}) => list.filter(t => (!f.symbol || f.symbol === '*' || (Array.isArray(f.symbol) ? f.symbol.includes(t.symbol) : t.symbol === f.symbol)) &&
   (!f.role || f.role === '*' || t.role === f.role) && (!f.important || t.hl.important));
+
+/* Enlaces "último tweet" de un activo: empresa, CEO y cuentas extra (p. ej. @saylor en MSTR).
+   account = fila de x_accounts.json (o null); tweets = lista ya preparada (más nuevo primero).
+   Devuelve [{kind:'empresa'|'ceo'|'extra', handle|null, label, status, tweet|null, reason}] — tweet = el más reciente de ese handle. */
+E.tweetTargets = function (sym, account, tweets) {
+  const lc = h => String(h || '').replace(/^@/, '').toLowerCase(), list = Array.isArray(tweets) ? tweets : [], out = [], seen = new Set();
+  const latest = h => list.reduce((b, t) => lc(t.handle) === lc(h) && (!b || t.ts > b.ts) ? t : b, null);
+  const add = (kind, handle, label, status, reason) => {
+    if (handle && seen.has(lc(handle))) return; if (handle) seen.add(lc(handle));
+    const tweet = handle ? latest(handle) : null;
+    out.push({ kind, handle: handle ? String(handle).replace(/^@/, '') : null, label, status: status || null, tweet,
+      reason: tweet ? null : handle || !account ? 'sin tweets recientes' : (reason || 'sin cuenta en X') });
+  };
+  const own = list.filter(t => t.symbol === String(sym || '').toUpperCase());
+  const pick = role => { const t = own.find(x => x.role === role); return t ? t.handle : null; };
+  const a = account || {};
+  add('empresa', a.company_handle || (account ? null : pick('empresa')), 'Empresa', a.company_status || null, a.company_status);
+  add('ceo', a.ceo_handle || (account ? null : pick('ceo')), a.ceo_name ? 'CEO · ' + a.ceo_name : 'CEO', a.ceo_status || null, a.ceo_status === 'n/a' ? 'no tiene CEO' : a.ceo_status);
+  for (const x of Array.isArray(a.extra_handles) ? a.extra_handles : []) {
+    const h = typeof x === 'string' ? x : x && x.handle; if (h) add('extra', h, (x && x.role) || 'Otra cuenta', (x && x.status) || null);
+  }
+  for (const t of own) if (!seen.has(lc(t.handle))) add('extra', t.handle, t.role === 'ceo' ? 'Directivo' : 'Otra cuenta', t.status);
+  return out;
+};
 E.newTweetIds = (prevIds, list) => list.filter(t => !prevIds.has(t.id)).map(t => t.id);
 
 /* conveniencia: analizar un activo completo */

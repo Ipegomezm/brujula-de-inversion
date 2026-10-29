@@ -3,7 +3,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>/*CSS*/</style></head><body><div class="wrap">
-<header style="position:relative"><button id="refresh" class="pri" style="position:absolute;top:0;right:0" title="Vuelve a leer los datos publicados y los precios de hoy">⟳ Refrescar</button><div class="mute small" id="asof" style="padding-right:8.5em">Cargando datos…</div><h1>Brújula de Inversión</h1><p class="lema">Ocho miradas. Una conclusión. Y la decisión final, tuya.</p>
+<div id="refreshDock"><button id="refresh" class="pri" title="Vuelve a leer los datos publicados y los precios de hoy">⟳ Refrescar</button><div id="refreshStamp">Sin refrescar</div></div>
+<header><div class="mute small" id="asof" style="padding-right:10.5em">Cargando datos…</div><h1>Brújula de Inversión</h1><p class="lema">Ocho miradas. Una conclusión. Y la decisión final, tuya.</p>
 <div id="refreshInfo" class="box small" style="display:none"></div>
 <div class="bar"><label>Invierto en <select id="region"><option value="AU">Australia</option><option value="US">EE.UU.</option></select></label>
 <label>Capital A$ <input type="number" id="capital" min="100" step="100"></label>

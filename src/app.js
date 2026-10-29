@@ -102,7 +102,8 @@ function evTable(ev) {
 async function detail(d) {
   const s = d.dataset.s, R = await analyze(s), box = d.querySelector('.det'), C = R.C, L = R.L, ema = L[0];
   const vcls = C.label === 'Comprar o mantener' ? '' : C.label === 'Vender o no comprar' ? 's' : 'w';
-  let h = R.live ? `<p class="small box interp"><span class="lab">Provisional</span><br>Lectura con el precio de hoy (${E.dayStr(R.live.day)}: ${num(R.live.close)}, TradingView con retraso, fuente no oficial). Cierre oficial anterior: ${num(R.live.officialClose)}; con él la conclusión era <b>${R.live.official}</b>. Las pruebas históricas y la confianza usan solo cierres oficiales.</p>` : '';
+  let h = `<div class="twlinks" data-s="${esc(s)}"></div>`;
+  h += R.live ? `<p class="small box interp"><span class="lab">Provisional</span><br>Lectura con el precio de hoy (${E.dayStr(R.live.day)}: ${num(R.live.close)}, TradingView con retraso, fuente no oficial). Cierre oficial anterior: ${num(R.live.officialClose)}; con él la conclusión era <b>${R.live.official}</b>. Las pruebas históricas y la confianza usan solo cierres oficiales.</p>` : '';
   h += `<div class="box verdict ${vcls}"><div class="mute small">Conclusión</div><div class="big ${ccls(C.label)}">${C.label}</div>
    ${C.warn ? `<p class="warn">${C.warn}</p>` : ''}<p><b>${C.trigger}</b></p>
    <p>Confianza: <b>${C.conf}</b>. ${C.why}</p>
@@ -135,7 +136,7 @@ async function detail(d) {
   const tv = TV[s]; if (tv) h += `<p class="small mute">Comparación con TradingView (fuente no oficial, con retraso): cierre ${num(tv.tvClose)}, media 50 semanas ${num(tv.tvEma50w)} (TradingView no ajusta por dividendos; aquí sí), diferencia ${pct(tv.dEmaPct / 100, 2)}.</p>`;
   h += `<h3>Bitácora</h3><div class="box"><p class="small">Antes de actuar, escribe qué harías y por qué. Se guarda en este navegador con la conclusión y el clima de hoy.</p>
    <div class="search"><select class="jc"><option>Compro</option><option>Mantengo</option><option>Espero</option><option>Vendo</option></select><input class="jw" placeholder="¿Por qué?"><button class="pri jb">Guardar</button></div></div>`;
-  box.innerHTML = h;
+  box.innerHTML = h; renderTweetLinks(box);
   box.querySelector('[data-price]') && priceChart(box.querySelector('[data-price]'), R);
   box.querySelectorAll('details.how').forEach(dd => dd.addEventListener('toggle', () => { const c = dd.querySelector('canvas[data-eq]'); if (dd.open && c && !c.dataset.done) { c.dataset.done = 1; equityChart(c, R.D, L[+c.dataset.eq].ev); } }));
   box.querySelector('.jb').onclick = () => { const why = box.querySelector('.jw').value.trim(); if (!why) return;
@@ -350,6 +351,10 @@ function status() {
   if (LIVEINFO) h += LIVEINFO.n ? `Precios de hoy: ${LIVEINFO.n} activos desde TradingView (fuente no oficial, con retraso: 15 min EE.UU., 20 min ASX)${LIVEINFO.latest ? `, último dato ${sydney(new Date(LIVEINFO.latest * 1000))}` : ''}. ${LIVEINFO.newer} tienen una sesión más nueva que el cierre oficial y se muestran como <span class="tag z">hoy</span> (provisional).${LIVEINFO.fail.length ? ' Fallos: ' + esc(LIVEINFO.fail.join('; ')) + '.' : ''}`
     : `No se pudo leer TradingView (${esc(LIVEINFO.fail.join('; ') || 'sin datos')}): se muestran los cierres oficiales publicados.`;
   $('#refreshInfo').innerHTML = h; $('#refreshInfo').style.display = h ? 'block' : 'none';
+  const hm = d => new Intl.DateTimeFormat('es-ES', { timeZone: 'Australia/Sydney', hour: '2-digit', minute: '2-digit', hour12: false }).format(d);
+  const z = d => new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Sydney', timeZoneName: 'short' }).formatToParts(d).find(p => p.type === 'timeZoneName').value;
+  $('#refreshStamp').textContent = REFRESHED ? `Refrescado ${hm(REFRESHED)} ${z(REFRESHED)}` : `Sin refrescar · cierres ${E.dayStr(CORE.lastDay).slice(5).split('-').reverse().join('/')}`;
+  $('#refreshStamp').title = REFRESHED ? 'Refrescado: ' + sydney(REFRESHED) : 'Toca Refrescar para leer los datos más nuevos';
 }
 async function refresh() {
   const b = $('#refresh'); b.disabled = true; b.textContent = '⟳ Refrescando…';
@@ -378,7 +383,7 @@ async function loadTweets(bust) {
   const fresh = TW.seen ? new Set(E.newTweetIds(TW.seen, P.tweets)) : new Set();
   TW.seen = new Set(P.tweets.map(t => t.id)); TW.list = P.tweets; TW.meta = P; TW.fresh = fresh;
   if (fresh.size && !document.body.classList.contains('tw-on')) TW.unread += fresh.size;
-  renderTweets();
+  renderTweets(); renderTweetLinks();
 }
 function renderTweets() {
   const P = TW.meta; if (!P) return;
@@ -391,7 +396,7 @@ function renderTweets() {
   sel.value = [...sel.options].some(o => o.value === cur) ? cur : '*';
   const f = { symbol: sel.value === '@board' ? board() : sel.value, role: $('#twRole').value, important: $('#twImp').checked };
   const L = E.filterTweets(TW.list, f);
-  $('#twList').innerHTML = L.length ? L.map(t => `<article class="tweet${t.hl.important ? ' imp' : ''}${TW.fresh && TW.fresh.has(t.id) ? ' nuevo' : ''}">
+  $('#twList').innerHTML = L.length ? L.map(t => `<article data-id="${E.escapeHtml(t.id)}" class="tweet${t.hl.important ? ' imp' : ''}${TW.fresh && TW.fresh.has(t.id) ? ' nuevo' : ''}">
     <div class="who"><b>${E.escapeHtml(t.author)}</b><span class="mute">@${E.escapeHtml(t.handle)}</span><span class="tag ${t.role === 'ceo' ? 'z' : 'n'}">${t.role === 'ceo' ? 'CEO' : 'Empresa'}</span><span class="tag p">${E.escapeHtml(t.symbol)}</span>${t.status === 'dudosa' ? '<span class="dud" title="No está confirmado que esta cuenta sea oficial">cuenta dudosa</span>' : ''}</div>
     ${t.hl.important ? `<div class="hl">★ Importante: ${t.hl.reasons.map(E.escapeHtml).join(' · ')}</div>` : t.hl.reasons.length ? `<div class="hl" style="color:var(--mute);font-weight:400">${t.hl.reasons.map(E.escapeHtml).join(' · ')}</div>` : ''}
     <div class="txt">${E.escapeHtml(t.text)}</div>
@@ -399,6 +404,28 @@ function renderTweets() {
     : '<p class="mute">Ningún tweet con estos filtros.</p>';
   $('#twN').textContent = TW.unread; $('#twN').style.display = TW.unread ? 'inline' : 'none';
 }
+function accountOf(sym) { const A = TW.accounts && (Array.isArray(TW.accounts) ? TW.accounts : TW.accounts.accounts); return Array.isArray(A) ? A.find(a => a.symbol === sym) || null : null; }
+function renderTweetLinks(root) {
+  (root || document).querySelectorAll('.twlinks').forEach(el => {
+    const sym = el.dataset.s, T = E.tweetTargets(sym, accountOf(sym), TW.list);
+    if (!TW.meta) { el.innerHTML = '<span class="small mute">Cargando tweets…</span>'; return; }
+    el.innerHTML = '<span class="small mute">Último tweet en X:</span> ' + T.map(t => {
+      const lab = `${t.kind === 'empresa' ? 'Empresa' : t.kind === 'ceo' ? 'CEO' : E.escapeHtml(t.label)}${t.handle ? ' @' + E.escapeHtml(t.handle) : ''}`;
+      return t.tweet ? `<button class="twj" data-id="${E.escapeHtml(t.tweet.id)}" title="${E.escapeHtml(t.label)} — ${E.escapeHtml(ago(t.tweet.ts))}">𝕏 ${lab}</button>`
+        : `<button class="twj" disabled title="${E.escapeHtml(t.reason)}">𝕏 ${lab} <span class="small">(${E.escapeHtml(t.reason)})</span></button>`;
+    }).join(' ');
+    el.querySelectorAll('button.twj[data-id]').forEach(b => b.onclick = e => { e.preventDefault(); jumpToTweet(b.dataset.id); });
+  });
+}
+function jumpToTweet(id) {   // limpia filtros, abre la columna, baja al tweet y lo resalta un momento
+  $('#twSym').value = '*'; $('#twRole').value = '*'; $('#twImp').checked = false; TW.fresh = null;
+  document.body.classList.add('tw-on'); TW.unread = 0; renderTweets();
+  const el = [...document.querySelectorAll('#twList article.tweet')].find(a => a.dataset.id === id); if (!el) return false;
+  el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  el.classList.remove('salto'); void el.offsetWidth; el.classList.add('salto'); setTimeout(() => el.classList.remove('salto'), 3000);
+  return true;
+}
+window.Brujula && (window.Brujula.jumpToTweet = jumpToTweet);
 function tweetsInit() {
   const wide = matchMedia('(min-width:1300px)').matches;
   if (wide && st.twOpen !== false) document.body.classList.add('tw-on');
