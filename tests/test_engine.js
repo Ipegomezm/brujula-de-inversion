@@ -60,4 +60,14 @@ const best = {}; for (const s of core.board) { const b = names.reduce((x, y) => 
 console.table(names.map(n => ({ regla: n, CAGRmed: p(med(core.board.map(s => labRows[s][n].cagr))), caidaMed: p(med(core.board.map(s => labRows[s][n].dd))), ratioMed: med(core.board.map(s => labRows[s][n].ratio)).toFixed(2), mejorEn: best[n] || 0 })));
 for (const s of ['SPY', 'QQQ']) console.log(` ${s}: no tocar ${p(labRows[s]['No tocar'].cagr)} / ${p(labRows[s]['No tocar'].dd)}  EMA50 ${p(labRows[s]['Solo EMA50'].cagr)} / ${p(labRows[s]['Solo EMA50'].dd)}`);
 const pr = E.project(1000, 100, 10, 0.08); ok(Math.abs(pr.at(-1) - (1000 * 1.08 ** 10 + 100 * ((1.08 ** 10 - 1) / (1.08 ** (1 / 12) - 1)))) < 1e-6, `proyección mensual = fórmula cerrada (${pr.at(-1).toFixed(2)})`);
+// 9) capa de precio de hoy: solo sesiones posteriores; pruebas con cierres oficiales
+{ const D = load('IVV.AX'), a = core.assets.find(x => x.s === 'IVV.AX'), ctx = { sym: 'IVV.AX', kind: a.k, fund: core.fund['IVV.AX'], spyMom };
+  const lastTs = (D.d.at(-1) * 86400) - 3600;  // 23:00 UTC del día anterior = 10:00 AEDT del último día oficial
+  const same = E.analyzeLive(D, { time: lastTs, open: 1, high: 1, low: 1, close: 1, volume: 1 }, ctx);
+  ok(same.live === null, 'barra del mismo día que el último cierre oficial: se ignora');
+  const nextTs = lastTs + 86400, bar = { time: nextTs, open: D.c.at(-1), high: D.c.at(-1) * 1.01, low: D.c.at(-1) * 0.99, close: D.c.at(-1) * 1.005, volume: 1000 };
+  const L = E.analyzeLive(D, bar, ctx), O = E.analyze(D, ctx);
+  ok(L.live && L.X.D.d.length === D.d.length + 1 && L.X.D.c.at(-1) === bar.close, `barra nueva añadida (${E.dayStr(L.live.day)})`);
+  ok(L.L[0].ev.all.cagr === O.L[0].ev.all.cagr && L.L[0].ev.trades === O.L[0].ev.trades, 'la prueba histórica sigue con cierres oficiales');
+  ok(D.d.length === load('IVV.AX').d.length, 'la serie oficial no se modifica'); }
 console.log(`\n${fails ? fails + ' FALLOS' : 'TODAS LAS PRUEBAS PASAN'}`); process.exit(fails ? 1 : 0);

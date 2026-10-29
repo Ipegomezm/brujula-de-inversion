@@ -3,7 +3,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>/*CSS*/</style></head><body><div class="wrap">
-<header><div class="mute small" id="asof">Cargando datos…</div><h1>Brújula de Inversión</h1><p class="lema">Ocho miradas. Una conclusión. Y la decisión final, tuya.</p>
+<header style="position:relative"><button id="refresh" class="pri" style="position:absolute;top:0;right:0" title="Vuelve a leer los datos publicados y los precios de hoy">⟳ Refrescar</button><div class="mute small" id="asof" style="padding-right:8.5em">Cargando datos…</div><h1>Brújula de Inversión</h1><p class="lema">Ocho miradas. Una conclusión. Y la decisión final, tuya.</p>
+<div id="refreshInfo" class="box small" style="display:none"></div>
 <div class="bar"><label>Invierto en <select id="region"><option value="AU">Australia</option><option value="US">EE.UU.</option></select></label>
 <label>Capital A$ <input type="number" id="capital" min="100" step="100"></label>
 <label>Riesgo <select id="risk"><option value="0.005">0,5%</option><option value="0.01">1%</option><option value="0.02">2%</option></select></label>
@@ -27,4 +28,7 @@
 <li><b>Datos.</b> Precios ajustados por dividendos y splits (adjclose ÷ close). TradingView solo se usa como comparación (fuente no oficial).</li>
 <li><b>Para aprender.</b> Uso familiar y educativo. No es asesoría financiera.</li></ul></section>
 </div><div id="tip"></div>
+<aside id="tw" aria-label="Tweets de empresas y CEOs"><div class="twh"><h2>En X: empresas y CEOs</h2><div id="twEx"></div><div class="small mute" id="twMeta">Cargando…</div>
+<div class="twf"><select id="twSym" title="Activo"></select><select id="twRole" title="Quién"><option value="*">Todos</option><option value="empresa">Empresas</option><option value="ceo">CEOs</option></select><label><input type="checkbox" id="twImp"> solo importantes</label></div></div><div class="tl" id="twList"></div></aside>
+<button id="twToggle" title="Mostrar u ocultar los tweets">𝕏 Tweets<span class="n" id="twN" style="display:none"></span></button>
 <script>/*CONTENT*/</script><script>/*ENGINE*/</script><script>/*APP*/</script></body></html>

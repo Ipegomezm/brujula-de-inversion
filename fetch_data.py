@@ -412,8 +412,12 @@ def main():
     open(os.path.join(new, "fetch_log.txt"), "w").write("\n".join(LOG))
     if not ok:
         log("VALIDACIÓN FALLIDA: data/ no se toca."); return 1
-    cache = os.path.join(ROOT, "data", "nasdaq100_cache.json")
-    if os.path.exists(cache): shutil.copy(cache, new)
+    # conservar archivos de data/ que este script no genera (p. ej. tweets.json/.js, x_accounts.json de otros procesos)
+    olddir = os.path.join(ROOT, "data")
+    if os.path.isdir(olddir):
+        for f in os.listdir(olddir):
+            src = os.path.join(olddir, f)
+            if os.path.isfile(src) and not os.path.exists(os.path.join(new, f)): shutil.copy2(src, new)
     old = os.path.join(ROOT, "data_prev"); shutil.rmtree(old, ignore_errors=True)
     if os.path.exists(os.path.join(ROOT, "data")): os.rename(os.path.join(ROOT, "data"), old)
     os.rename(new, os.path.join(ROOT, "data"))

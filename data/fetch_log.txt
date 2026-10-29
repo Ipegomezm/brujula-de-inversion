@@ -1,6 +1,6 @@
 Nasdaq-100: 101 símbolos (api.nasdaq.com)
 Universo pedido: 168 activos; auxiliares: 15; descargas de precios: 181
-Precios descargados en 16s
+Precios descargados en 17s
   IVV.AX: reescalado ×0.06757 en 2011-01-04
   IVV.AX: pico borrado en 2015-12-28
 Activos válidos: 166; descartados (<300 días): ['HONA (95 días)', 'SPCX (96 días)']; errores: []
@@ -9,7 +9,7 @@ TradingView: ['america: 146 filas', 'australia: 18 filas', 'crypto: 2 filas']; e
 core.json: 3.14 MB
 OK    al menos 150 activos (hay 166)
 OK    al menos 100 con datos del negocio (hay 164)
-OK    última fecha 20754 ≥ publicada 20754
+OK    última fecha 20755 ≥ publicada 20755
 OK    auxiliares completos
 OK    sin filas con máximo/mínimo incoherente
 OK    fechas estrictamente crecientes

@@ -1,0 +1,33 @@
+// Pruebas de las funciones de tweets del motor (node tests/test_tweets.js)
+const E = require('../src/engine.js'), fs = require('fs'), path = require('path');
+let fails = 0; const ok = (c, m) => { console.log((c ? 'PASS ' : 'FAIL ') + m); if (!c) fails++; };
+const H = t => E.tweetHighlight(t);
+ok(H('La FDA aprueba el nuevo fármaco').reasons.includes('Regulador / FDA') && H('La FDA aprueba el nuevo fármaco').important, 'FDA/aprobación → importante');
+ok(H('Anunciamos un DESCUBRIMIENTO en baterías').reasons.includes('Descubrimiento'), 'mayúsculas y acentos: descubrimiento');
+ok(H('We announce the acquisition of Foo Inc. for $2 billion').reasons.join() === 'Adquisición / fusión,Cifras', 'inglés: adquisición + cifras');
+ok(H('Q3 earnings: revenue up 12%; raising full-year guidance').score >= 5, 'resultados + guidance + cifras');
+ok(!H('Buenos días, qué lindo día').important && H('Buenos días, qué lindo día').score === 0, 'texto sin noticias → 0');
+ok(!H('fdabc unrelated').reasons.length && !H('the second quarterback').reasons.includes('Riesgo') && !H('una operacion opaca').reasons.length, 'no coincide dentro de otra palabra (fdabc, second, opaca)');
+ok(H('Descubrimos un yacimiento').reasons.includes('Descubrimiento') && H('SEC investigation').reasons.includes('Riesgo'), 'prefijos (descubr*) y palabras (sec)');
+ok(H('Nuevo contrato con el gobierno').reasons.includes('Contrato / alianza') && !H('Nuevo contrato con el gobierno').important, 'contrato solo (2 puntos) → no importante');
+ok(E.tweetHighlight('nada', { score: 7, reasons: ['Del generador'] }).score === 7, 'respeta highlight del archivo (máximo)');
+const x = '<img src=x onerror=alert(1)>"\'`&';
+ok(E.escapeHtml(x) === '&lt;img src=x onerror=alert(1)&gt;&quot;&#39;&#96;&amp;' && !/[<>"'`]/.test(E.escapeHtml(x)), 'escapeHtml neutraliza HTML');
+const now = Date.parse('2026-10-29T10:00:00Z'), mk = (id, h, txt, extra = {}) => Object.assign({ id, url: 'https://x.com/a/status/' + id, symbol: 'nvda', handle: '@a', author_name: 'A', role: 'empresa', account_status: 'confirmada', created_at: new Date(now - h * 36e5).toISOString(), text: txt }, extra);
+const P = E.prepareTweets({ schema_version: 1, source: 'ejemplo', generated_at: '2026-10-29T21:00:00+11:00', tweets: [mk('1', 1, 'a'), mk('2', 30, 'b'), mk('1', 2, 'dup'), mk('3', 24 * 9, 'viejo'), mk('4', 0.5, 'x', { url: 'javascript:alert(1)', role: 'raro', account_status: 'x' }), { id: '5', text: 'sin fecha', handle: 'a' }] }, { now, days: 7 });
+ok(P.tweets.map(t => t.id).join() === '4,1,2', 'dedupe por id, orden nuevo→viejo, quita >7 días e inválidos');
+ok(P.tweets[0].url === 'https://x.com/a' && P.tweets[0].role === 'empresa' && P.tweets[0].status === 'dudosa', 'url no-X → perfil en x.com; rol/estado desconocidos → empresa/dudosa');
+ok(P.tweets[1].symbol === 'NVDA' && P.tweets[1].handle === 'a', 'símbolo en mayúsculas, handle sin @');
+ok(P.example === true, 'source "ejemplo" detectado');
+ok(E.prepareTweets({ schema_version: 2, tweets: [] }).errors.length === 1, 'avisa de schema_version distinto');
+ok(!E.prepareTweets({}).ok, 'documento sin "tweets" → no válido');
+const L = P.tweets; ok(E.filterTweets(L, { symbol: ['NVDA'] }).length === 3 && E.filterTweets(L, { role: 'ceo' }).length === 0, 'filtros por activo y rol');
+ok(E.newTweetIds(new Set(['1', '2']), L).join() === '4', 'detecta tweets nuevos');
+// el archivo de ejemplo publicado es válido y está marcado como ejemplo
+const doc = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'tweets.json')));
+const PD = E.prepareTweets(doc, { now: Date.parse(doc.generated_at) });
+ok(PD.ok && PD.errors.length === 0 && PD.tweets.length === doc.tweets.length && (doc.source === 'ejemplo' || doc.source === 'x-public-reads'), `data/tweets.json válido (${PD.tweets.length} tweets, source=${doc.source}, importantes ${PD.tweets.filter(t => t.hl.important).length})`);
+ok(doc.source === 'ejemplo' ? doc.tweets.every(t => /EJEMPLO FICTICIO/.test(t.text) && /^EJEMPLO_/.test(t.handle)) : doc.tweets.every(t => !/^ejemplo-/.test(t.id) && !/^EJEMPLO_/.test(t.handle)), doc.source === 'ejemplo' ? 'todos los tweets de ejemplo dicen EJEMPLO FICTICIO' : 'datos reales: ningún tweet de ejemplo mezclado');
+const js = fs.readFileSync(path.join(__dirname, '..', 'data', 'tweets.js'), 'utf8'); let got; global.window = { __B: (k, o) => got = [k, o] }; eval(js);
+ok(got && got[0] === 'tweets.json' && JSON.stringify(got[1]) === JSON.stringify(doc), 'tweets.js = window.__B("tweets.json", <mismo JSON>)');
+console.log(fails ? fails + ' FALLOS' : 'TODAS LAS PRUEBAS DE TWEETS PASAN'); process.exit(fails ? 1 : 0);

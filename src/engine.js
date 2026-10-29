@@ -423,6 +423,84 @@ E.lab = function (X) {
 /* §14 proyección: V = V × (1 + r_m) + C, r_m = (1+tasa)^(1/12) − 1 */
 E.project = function (V0, C, years, rate) { const rm = Math.pow(1 + rate, 1 / 12) - 1, out = [V0]; let V = V0; for (let m = 1; m <= years * 12; m++) { V = V * (1 + rm) + C; out.push(V); } return out; };
 
+
+/* ---------- precio de hoy (capa provisional, opcional) ----------
+   bar = {time (s, inicio de la sesión), open, high, low, close, volume} de una fuente con retraso (TradingView).
+   Solo se usa si es una sesión POSTERIOR al último cierre oficial. Las pruebas históricas siguen con cierres oficiales. */
+E.tzOf = sym => /\.AX$/.test(sym) ? 'Australia/Sydney' : /-USD$/.test(sym) ? 'UTC' : 'America/New_York';
+E.dayInTz = function (ts, tz) {          // fecha local de la bolsa -> días desde 1970
+  const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(ts * 1000));
+  return Math.round(Date.UTC(+p.slice(0, 4), +p.slice(5, 7) - 1, +p.slice(8, 10)) / 864e5);
+};
+E.withBar = function (D, bar, day) {
+  if (!bar || bar.close == null || !(day > D.d[D.d.length - 1])) return null;
+  const c = bar.close, o = bar.open || c, h = Math.max(bar.high || c, o, c), l = Math.min(bar.low || c, o, c);
+  return { d: D.d.concat([day]), o: D.o.concat([o]), h: D.h.concat([h]), l: D.l.concat([l]), c: D.c.concat([c]), v: D.v.concat([bar.volume || 0]), liveDay: day };
+};
+E.analyzeLive = function (D, bar, ctx) {   // lecturas con el precio de hoy; pruebas y confianza con cierres oficiales
+  const off = E.analyze(D, ctx), day = bar && bar.time ? E.dayInTz(bar.time, E.tzOf(ctx.sym)) : null, DL = E.withBar(D, bar, day);
+  if (!DL) return Object.assign(off, { live: null });
+  const R = E.analyze(DL, ctx);
+  R.L.forEach((l, i) => { if (off.L[i].ev) l.ev = off.L[i].ev; });
+  R.C = E.conclude(R.L, R.X);
+  R.live = { day, close: bar.close, official: off.C.label, officialClose: D.c[D.c.length - 1], changed: off.C.label !== R.C.label };
+  return R;
+};
+
+
+/* ---------- tweets: validación y destacados (funciones puras) ---------- */
+E.escapeHtml = s => String(s == null ? '' : s).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+E.norm = s => String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+// [motivo, peso, términos] sin acentos y en minúsculas; "*" al final = prefijo (descubr* → descubre, descubrimos…); si no, palabra entera
+E.TWEET_RULES = [
+  ['Descubrimiento', 3, ['descubrimiento*', 'descubr*', 'hallazgo*', 'discover*', 'breakthrough*', 'avance cientifico']],
+  ['Regulador / FDA', 3, ['fda', 'tga', 'aprobacion*', 'aprueba*', 'aprobad*', 'approval*', 'approved', 'approves', 'clearance', 'autorizacion*']],
+  ['Adquisición / fusión', 3, ['adquisicion*', 'adquiere*', 'adquirir', 'acquisition*', 'acquire*', 'merger*', 'fusion*', 'takeover*', 'opa']],
+  ['Resultados', 2, ['resultados', 'earnings', 'results', 'trimestr*', 'quarter*', 'ingresos', 'revenue*', 'beneficio*', 'eps', 'ganancias']],
+  ['Previsión (guidance)', 2, ['guidance', 'prevision*', 'outlook', 'perspectivas', 'raises', 'lowers', 'rebaja*']],
+  ['Contrato / alianza', 2, ['contrato*', 'contract*', 'acuerdo*', 'agreement*', 'alianza*', 'partnership*', 'adjudica*', 'awarded']],
+  ['Dividendo / recompra', 2, ['dividendo*', 'dividend*', 'recompra*', 'buyback*', 'repurchase*']],
+  ['Lanzamiento', 1, ['lanza', 'lanzamos', 'lanzamiento*', 'launch*', 'unveil*', 'presenta', 'presentamos', 'introduces', 'nuevo producto']],
+  ['Riesgo', 3, ['recall*', 'retirada*', 'demanda', 'lawsuit*', 'investigacion*', 'investigation*', 'sec', 'multa*', 'despidos', 'layoff*', 'dimite', 'steps down', 'resign*', 'hackeo*', 'breach*', 'quiebra*', 'bankrupt*']]
+];
+E._kwRe = {};
+E.kwTest = function (t, k) {
+  const re = E._kwRe[k] || (E._kwRe[k] = new RegExp('(^|[^a-z0-9])' + k.replace(/\*$/, '').replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + (k.endsWith('*') ? '' : '(?![a-z0-9])')));
+  return re.test(t);
+};
+E.tweetHighlight = function (text, given) {
+  const t = ' ' + E.norm(text) + ' ', reasons = []; let score = 0;
+  for (const [why, w, keys] of E.TWEET_RULES) if (keys.some(k => E.kwTest(t, k))) { reasons.push(why); score += w; }
+  if (/(\d[\d.,]*\s?%|[$€£]\s?\d|\d\s?(mil millones|millones|billion|million|bn|m)\b)/.test(t)) { reasons.push('Cifras'); score += 1; }
+  if (given && Array.isArray(given.reasons)) for (const r of given.reasons) if (typeof r === 'string' && !reasons.includes(r)) reasons.push(r);
+  if (given && typeof given.score === 'number') score = Math.max(score, given.score);
+  score = Math.min(10, score);
+  return { score, reasons, important: score >= 3 };
+};
+E.TWEET_SCHEMA = 1;
+E.prepareTweets = function (doc, opt = {}) {   // valida, deduplica, ordena (nuevo primero), recorta por días y tope
+  const now = opt.now != null ? opt.now : Date.now(), days = opt.days || 7, cap = opt.cap || 500, errors = [];
+  if (!doc || typeof doc !== 'object' || !Array.isArray(doc.tweets)) return { ok: false, errors: ['sin lista "tweets"'], tweets: [] };
+  if (doc.schema_version !== E.TWEET_SCHEMA) errors.push('schema_version ' + doc.schema_version + ' (se espera ' + E.TWEET_SCHEMA + ')');
+  const seen = new Set(), out = [];
+  for (const t of doc.tweets) {
+    if (!t || typeof t !== 'object') continue;
+    const id = String(t.id || ''), ts = Date.parse(t.created_at);
+    if (!id || seen.has(id) || !isFinite(ts) || typeof t.text !== 'string' || !t.handle) { if (id && !seen.has(id)) errors.push('tweet inválido ' + id); continue; }
+    if (now - ts > days * 864e5) continue;
+    seen.add(id);
+    const url = /^https:\/\/(x|twitter)\.com\//.test(t.url || '') ? t.url : 'https://x.com/' + encodeURIComponent(String(t.handle).replace(/^@/, ''));
+    out.push({ id, url, ts, symbol: String(t.symbol || '').toUpperCase(), handle: String(t.handle).replace(/^@/, ''), author: String(t.author_name || t.handle),
+      role: t.role === 'ceo' ? 'ceo' : 'empresa', status: t.account_status === 'confirmada' ? 'confirmada' : 'dudosa', text: t.text,
+      metrics: t.metrics && typeof t.metrics === 'object' ? t.metrics : null, hl: E.tweetHighlight(t.text, t.highlight) });
+  }
+  out.sort((a, b) => b.ts - a.ts || (a.id < b.id ? 1 : -1));
+  return { ok: true, errors, tweets: out.slice(0, cap), example: doc.source === 'ejemplo', generated: doc.generated_at, source: doc.source, accounts: doc.accounts_checked };
+};
+E.filterTweets = (list, f = {}) => list.filter(t => (!f.symbol || f.symbol === '*' || (Array.isArray(f.symbol) ? f.symbol.includes(t.symbol) : t.symbol === f.symbol)) &&
+  (!f.role || f.role === '*' || t.role === f.role) && (!f.important || t.hl.important));
+E.newTweetIds = (prevIds, list) => list.filter(t => !prevIds.has(t.id)).map(t => t.id);
+
 /* conveniencia: analizar un activo completo */
 E.analyze = function (D, ctx) {
   const X = E.prepare(D), L = E.lenses(X, Object.assign({ lastClose: D.c[D.c.length - 1] }, ctx));

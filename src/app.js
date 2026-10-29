@@ -7,14 +7,15 @@ const KEY = 'brujula-v1';
 const st = Object.assign({ region: 'AU', capital: 10000, risk: 0.01, extra: [], theme: null, journal: [], plan: {}, feeASX: 5, feeUS: 0, fxFee: 0.7 }, JSON.parse(localStorage.getItem(KEY) || '{}'));
 const save = () => localStorage.setItem(KEY, JSON.stringify(st));
 const g = (term, shown) => `<span class="g" data-g="${esc(term)}">${esc(shown || term)}</span>`;
-let CORE, FX, SPY, QQQ, CLIM, TV = {}; const DS = {}, AN = {};
+let CORE, FX, SPY, QQQ, CLIM, TV = {}, LIVE = {}, LIVEFX = null, LIVEINFO = null, REFRESHED = null; const DS = {}, AN = {};
 
 /* ---------- carga: fetch y, si se abre con file://, <script> ---------- */
 const pend = {}; window.__B = (k, o) => { if (pend[k]) { pend[k](o); delete pend[k]; } };
+let BUST = '';   // al refrescar: ?v=<hora> para saltarse la caché del navegador y de GitHub Pages
 function load(key) {
-  const f = location.protocol === 'file:' ? Promise.reject(0) : fetch('data/' + key).then(r => { if (!r.ok) throw 0; return r.json(); });
+  const f = location.protocol === 'file:' ? Promise.reject(0) : fetch('data/' + key + BUST, { cache: 'no-store' }).then(r => { if (!r.ok) throw 0; return r.json(); });
   return f.catch(() => new Promise((res, rej) => {
-    pend[key] = res; const s = document.createElement('script'); s.src = 'data/' + key.replace(/\.json$/, '.js');
+    pend[key] = res; const s = document.createElement('script'); s.src = 'data/' + key.replace(/\.json$/, '.js') + BUST;
     s.onerror = () => { delete pend[key]; rej(new Error('No se pudo cargar ' + key)); }; document.head.appendChild(s); }));
 }
 const asset = s => CORE.assets.find(a => a.s === s);
@@ -23,8 +24,10 @@ async function analyze(s) {
   if (AN[s]) return AN[s];
   const a = asset(s), D = await getD(s);
   const twin = { 'IVV.AX': 'SPY', 'NDQ.AX': 'QQQ' }[s];
-  const R = E.analyze(D, { sym: s, kind: a.k, fund: CORE.fund[s] || {}, spyMom: E.momentum12(SPY), twinFund: twin ? CORE.fund[twin] : null });
-  R.a = a; R.D = D; R.usd = a.cur === 'USD'; R.mchg = D.c.at(-1) / D.c[Math.max(0, D.c.length - 22)] - 1;
+  const ctx = { sym: s, kind: a.k, fund: CORE.fund[s] || {}, spyMom: E.momentum12(SPY), twinFund: twin ? CORE.fund[twin] : null };
+  const R = LIVE[s] ? E.analyzeLive(D, LIVE[s], ctx) : E.analyze(D, ctx);
+  if (R.live) R.D = R.X.D;
+  R.a = a; R.D = R.D || D; R.usd = a.cur === 'USD'; R.mchg = D.c.at(-1) / D.c[Math.max(0, D.c.length - 22)] - 1;
   return AN[s] = R;
 }
 const swapSym = s => { const m = CORE.swap, inv = Object.fromEntries(Object.entries(m).map(([a, b]) => [b, a]));
@@ -33,7 +36,7 @@ const board = () => [...new Set(CORE.board.map(swapSym).concat(st.extra))].filte
 const cls = s => s === 1 ? 'p' : s === -1 ? 'm' : s === 0 ? 'z' : 'n';
 const ccls = l => l === 'Comprar o mantener' ? 'c-buy' : l === 'Vender o no comprar' ? 'c-sell' : 'c-mid';
 const cur = R => R.usd ? 'US$' : R.a.cur === 'AUD' ? 'A$' : R.a.cur;
-const fxNow = () => FX.c.at(-1);
+const fxNow = () => LIVEFX || FX.c.at(-1);
 
 /* ---------- gráficas (canvas, sin librerías) ---------- */
 function cv(el, h) { const dpr = window.devicePixelRatio || 1, w = el.clientWidth || 600; el.width = w * dpr; el.height = h * dpr; el.style.height = h + 'px'; const x = el.getContext('2d'); x.scale(dpr, dpr); return { x, w, h }; }
@@ -79,8 +82,8 @@ function lights(L) { return '<span class="lights">' + L.map(l => `<span class="l
 function rowHTML(R) {
   const s = R.a.s;
   return `<details class="row" data-s="${esc(s)}"><summary><span class="nm">${esc(s)}<small>${esc(R.a.n)}</small></span>
-  <span class="num">${cur(R)} ${num(R.D.c.at(-1))}<br><small class="${R.mchg >= 0 ? 'up' : 'dn'}">${R.mchg >= 0 ? '+' : ''}${pct(R.mchg)} mes</small></span>
-  ${lights(R.L)}<span class="concl ${ccls(R.C.label)}">${R.C.label}</span></summary><div class="det"></div></details>`;
+  <span class="num">${cur(R)} ${num(R.D.c.at(-1))}${R.live ? ' <span class="tag z" title="Precio de hoy con retraso (TradingView, no oficial)">hoy</span>' : ''}<br><small class="${R.mchg >= 0 ? 'up' : 'dn'}">${R.mchg >= 0 ? '+' : ''}${pct(R.mchg)} mes</small></span>
+  ${lights(R.L)}<span class="concl ${ccls(R.C.label)}">${R.C.label}${R.live && R.live.changed ? '*' : ''}</span></summary><div class="det"></div></details>`;
 }
 async function renderBoard() {
   const el = $('#board'); el.innerHTML = '<p class="progress">Calculando…</p>';
@@ -99,7 +102,8 @@ function evTable(ev) {
 async function detail(d) {
   const s = d.dataset.s, R = await analyze(s), box = d.querySelector('.det'), C = R.C, L = R.L, ema = L[0];
   const vcls = C.label === 'Comprar o mantener' ? '' : C.label === 'Vender o no comprar' ? 's' : 'w';
-  let h = `<div class="box verdict ${vcls}"><div class="mute small">Conclusión</div><div class="big ${ccls(C.label)}">${C.label}</div>
+  let h = R.live ? `<p class="small box interp"><span class="lab">Provisional</span><br>Lectura con el precio de hoy (${E.dayStr(R.live.day)}: ${num(R.live.close)}, TradingView con retraso, fuente no oficial). Cierre oficial anterior: ${num(R.live.officialClose)}; con él la conclusión era <b>${R.live.official}</b>. Las pruebas históricas y la confianza usan solo cierres oficiales.</p>` : '';
+  h += `<div class="box verdict ${vcls}"><div class="mute small">Conclusión</div><div class="big ${ccls(C.label)}">${C.label}</div>
    ${C.warn ? `<p class="warn">${C.warn}</p>` : ''}<p><b>${C.trigger}</b></p>
    <p>Confianza: <b>${C.conf}</b>. ${C.why}</p>
    <p class="small mute">Decide la ${g('media de 50 semanas')}. Votan ${C.n} miradas (sin las que no aplican); hacen falta ${C.need}. A favor: ${C.fav}. En contra: ${C.con}.</p></div>`;
@@ -312,6 +316,97 @@ function tips() {
   window.addEventListener('scroll', () => tip.style.display = 'none', { passive: true });
 }
 
+/* ---------- refrescar ---------- */
+const sydney = d => { const f = o => new Intl.DateTimeFormat('es-ES', Object.assign({ timeZone: 'Australia/Sydney' }, o)).format(d);
+  const z = new Intl.DateTimeFormat('en-AU', { timeZone: 'Australia/Sydney', timeZoneName: 'short' }).formatToParts(d).find(p => p.type === 'timeZoneName').value;
+  return `${f({ day: '2-digit', month: '2-digit', year: 'numeric' })} ${f({ hour: '2-digit', minute: '2-digit', hour12: false })} (hora de Sídney, ${z})`; };
+async function tvScan(market, tickers) {   // POST "simple" (text/plain): TradingView responde con Access-Control-Allow-Origin
+  const r = await fetch(`https://scanner.tradingview.com/${market}/scan`, { method: 'POST', body: JSON.stringify({ symbols: { tickers }, columns: ['open', 'high', 'low', 'close', 'volume', 'time', 'update_time', 'update_mode'] }) });
+  if (!r.ok) throw new Error(market + ' HTTP ' + r.status); return (await r.json()).data || [];
+}
+async function fetchLive() {
+  LIVE = {}; LIVEFX = null; const by = { america: [], australia: [], crypto: [] }, back = {};
+  CORE.assets.forEach(a => { const t = TV[a.s] && TV[a.s].tv; if (!t) return; back[t] = a.s; by[t.startsWith('ASX:') ? 'australia' : /^(BITSTAMP|COINBASE|BINANCE):/.test(t) ? 'crypto' : 'america'].push(t); });
+  const info = { ok: [], fail: [], n: 0, newer: 0, latest: 0 };
+  await Promise.all(Object.entries(by).map(async ([m, ts]) => { if (!ts.length) return; try {
+    (await tvScan(m, ts)).forEach(row => { const [open, high, low, close, volume, time, upd, mode] = row.d, s = back[row.s]; if (!s || close == null || !time) return;
+      LIVE[s] = { open, high, low, close, volume, time, upd, mode }; info.n++; info.latest = Math.max(info.latest, upd || 0); }); info.ok.push(m);
+  } catch (e) { info.fail.push(m + ': ' + e.message); } }));
+  try { const fx = await tvScan('forex', ['FX_IDC:AUDUSD']); if (fx[0] && fx[0].d[3]) LIVEFX = fx[0].d[3]; info.ok.push('forex'); } catch (e) { info.fail.push('forex: ' + e.message); }
+  CORE.assets.forEach(a => { const b = LIVE[a.s]; if (b && E.dayInTz(b.time, E.tzOf(a.s)) > a.last) info.newer++; });
+  return info;
+}
+async function loadBase() {
+  CORE = await load('core.json'); TV = {};
+  try { const tv = await load('tv.json'); tv.rows.forEach(r => TV[r.s] = r); } catch (e) { /* opcional */ }
+  FX = E.decode(CORE.aux['AUDUSD=X']); SPY = await getD('SPY'); QQQ = await getD('QQQ');
+  const ax = s => E.decode(CORE.aux[s]);
+  CLIM = E.climate(SPY, 'XLK XLF XLE XLV XLY XLP XLI XLB XLU'.split(' ').map(ax), ax('HYG'), ax('IEF'), ax('^VIX'), ax('TLT'));
+}
+function status() {
+  const gen = new Date(CORE.generated);
+  $('#asof').textContent = `Cierres oficiales al ${E.dayStr(CORE.lastDay)} · ${CORE.assets.length} activos · datos publicados ${sydney(gen)}`;
+  let h = REFRESHED ? `<b>Refrescado: ${sydney(REFRESHED)}</b>. ` : '';
+  if (LIVEINFO) h += LIVEINFO.n ? `Precios de hoy: ${LIVEINFO.n} activos desde TradingView (fuente no oficial, con retraso: 15 min EE.UU., 20 min ASX)${LIVEINFO.latest ? `, último dato ${sydney(new Date(LIVEINFO.latest * 1000))}` : ''}. ${LIVEINFO.newer} tienen una sesión más nueva que el cierre oficial y se muestran como <span class="tag z">hoy</span> (provisional).${LIVEINFO.fail.length ? ' Fallos: ' + esc(LIVEINFO.fail.join('; ')) + '.' : ''}`
+    : `No se pudo leer TradingView (${esc(LIVEINFO.fail.join('; ') || 'sin datos')}): se muestran los cierres oficiales publicados.`;
+  $('#refreshInfo').innerHTML = h; $('#refreshInfo').style.display = h ? 'block' : 'none';
+}
+async function refresh() {
+  const b = $('#refresh'); b.disabled = true; b.textContent = '⟳ Refrescando…';
+  try {
+    BUST = '?v=' + Date.now();
+    for (const k of Object.keys(DS)) delete DS[k]; for (const k of Object.keys(AN)) delete AN[k];
+    await loadBase(); LIVEINFO = await fetchLive(); REFRESHED = new Date();
+    for (const k of Object.keys(AN)) delete AN[k];
+    status(); renderClimate(); renderRanking(false); await renderAll(); await loadTweets(true);
+  } catch (e) { $('#refreshInfo').innerHTML = `<span class="warn">No se pudo refrescar: ${esc(e.message || e)}. Siguen los datos anteriores.</span>`; $('#refreshInfo').style.display = 'block'; }
+  b.disabled = false; b.textContent = '⟳ Refrescar'; document.body.dataset.refreshed = String(Date.now());
+}
+
+/* ---------- columna de tweets ---------- */
+const TW = { list: [], seen: null, meta: null, accounts: null, unread: 0, timer: null };
+const TW_POLL_MS = 5 * 60 * 1000;   // cada 5 minutos
+const xUrl = u => /^https:\/\/(x|twitter)\.com\//.test(u) ? u : 'https://x.com/';
+function ago(ts) { const m = Math.round((Date.now() - ts) / 6e4); return m < 1 ? 'ahora' : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; }
+async function loadTweets(bust) {
+  const old = BUST; BUST = bust ? '?v=' + Date.now() : BUST; let doc;
+  try { doc = await load('tweets.json'); } catch (e) { doc = null; } finally { BUST = old; }
+  if (!TW.accounts) { try { TW.accounts = await load('x_accounts.json'); } catch (e) { TW.accounts = false; } }
+  if (!doc) { $('#twMeta').textContent = 'Todavía no hay tweets publicados (data/tweets.json).'; return; }
+  const P = E.prepareTweets(doc, { now: Date.parse(doc.generated_at) || Date.now(), days: doc.window_days || 7, cap: 500 });
+  if (!P.ok) { $('#twMeta').textContent = 'Archivo de tweets no válido: ' + P.errors.join('; '); return; }
+  const fresh = TW.seen ? new Set(E.newTweetIds(TW.seen, P.tweets)) : new Set();
+  TW.seen = new Set(P.tweets.map(t => t.id)); TW.list = P.tweets; TW.meta = P; TW.fresh = fresh;
+  if (fresh.size && !document.body.classList.contains('tw-on')) TW.unread += fresh.size;
+  renderTweets();
+}
+function renderTweets() {
+  const P = TW.meta; if (!P) return;
+  $('#twEx').innerHTML = P.example ? '<div class="ex">⚠ DATOS DE EJEMPLO<br><span style="font-weight:400;font-size:.8rem">Tweets inventados para probar la columna. No son reales.</span></div>' : '';
+  const acc = TW.accounts && Array.isArray(TW.accounts.accounts || TW.accounts) ? (TW.accounts.accounts || TW.accounts) : null;
+  const nd = acc ? acc.filter(a => a.company_status === 'dudosa' || a.ceo_status === 'dudosa').length : null;
+  $('#twMeta').innerHTML = `Actualizado: ${P.generated && isFinite(Date.parse(P.generated)) ? sydney(new Date(P.generated)) : '—'} · fuente: ${esc(P.source || '—')} · ${P.tweets.length} tweets${P.accounts ? ` de ${P.accounts} cuentas revisadas` : ''}${acc ? ` · cuentas en lista: ${acc.length}${nd ? ` (${nd} con alguna dudosa)` : ''}` : ''}. Se revisa cada 5 min.`;
+  const sel = $('#twSym'), cur = sel.value || '*', syms = [...new Set(P.tweets.map(t => t.symbol))].sort();
+  sel.innerHTML = `<option value="*">Todos los activos</option><option value="@board">Mi tablero</option>` + syms.map(s => `<option value="${esc(s)}">${esc(s)}</option>`).join('');
+  sel.value = [...sel.options].some(o => o.value === cur) ? cur : '*';
+  const f = { symbol: sel.value === '@board' ? board() : sel.value, role: $('#twRole').value, important: $('#twImp').checked };
+  const L = E.filterTweets(TW.list, f);
+  $('#twList').innerHTML = L.length ? L.map(t => `<article class="tweet${t.hl.important ? ' imp' : ''}${TW.fresh && TW.fresh.has(t.id) ? ' nuevo' : ''}">
+    <div class="who"><b>${E.escapeHtml(t.author)}</b><span class="mute">@${E.escapeHtml(t.handle)}</span><span class="tag ${t.role === 'ceo' ? 'z' : 'n'}">${t.role === 'ceo' ? 'CEO' : 'Empresa'}</span><span class="tag p">${E.escapeHtml(t.symbol)}</span>${t.status === 'dudosa' ? '<span class="dud" title="No está confirmado que esta cuenta sea oficial">cuenta dudosa</span>' : ''}</div>
+    ${t.hl.important ? `<div class="hl">★ Importante: ${t.hl.reasons.map(E.escapeHtml).join(' · ')}</div>` : t.hl.reasons.length ? `<div class="hl" style="color:var(--mute);font-weight:400">${t.hl.reasons.map(E.escapeHtml).join(' · ')}</div>` : ''}
+    <div class="txt">${E.escapeHtml(t.text)}</div>
+    <div class="ft"><span title="${E.escapeHtml(sydney(new Date(t.ts)))}">${ago(t.ts)}</span>${t.metrics ? `<span>♥ ${+t.metrics.likes || 0} · ↻ ${+t.metrics.reposts || 0}</span>` : ''}<a href="${E.escapeHtml(xUrl(t.url))}" target="_blank" rel="noopener noreferrer nofollow">Ver en X ↗</a></div></article>`).join('')
+    : '<p class="mute">Ningún tweet con estos filtros.</p>';
+  $('#twN').textContent = TW.unread; $('#twN').style.display = TW.unread ? 'inline' : 'none';
+}
+function tweetsInit() {
+  const wide = matchMedia('(min-width:1300px)').matches;
+  if (wide && st.twOpen !== false) document.body.classList.add('tw-on');
+  $('#twToggle').onclick = () => { const on = document.body.classList.toggle('tw-on'); if (on) TW.unread = 0; if (matchMedia('(min-width:1300px)').matches) { st.twOpen = on; save(); } renderTweets(); };
+  ['#twSym', '#twRole', '#twImp'].forEach(s => $(s).onchange = () => { TW.fresh = null; renderTweets(); });
+  loadTweets(true); TW.timer = setInterval(() => loadTweets(true), TW_POLL_MS);
+}
+
 /* ---------- arranque ---------- */
 function settings() {
   const th = st.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.dataset.theme = th;
@@ -325,17 +420,13 @@ function settings() {
 }
 async function renderAll() { await renderBoard(); renderStart(); await renderChamps(); renderJournal(); await renderLab(); renderFlows(); }
 async function main() {
-  try { CORE = await load('core.json'); } catch (e) { $('#board').innerHTML = '<p class="warn">No se encontraron los datos (data/core.json). Ejecuta primero fetch_data.py.</p>'; return; }
-  try { const tv = await load('tv.json'); tv.rows.forEach(r => TV[r.s] = r); } catch (e) { /* opcional */ }
-  FX = E.decode(CORE.aux['AUDUSD=X']);
-  $('#asof').textContent = `Datos al cierre del ${E.dayStr(CORE.lastDay)} · ${CORE.assets.length} activos · generado ${CORE.generated.replace('T', ' ').slice(0, 16)} UTC`;
-  settings(); tips(); renderTeach();
-  SPY = await getD('SPY'); QQQ = await getD('QQQ');
-  const ax = s => E.decode(CORE.aux[s]);
-  CLIM = E.climate(SPY, 'XLK XLF XLE XLV XLY XLP XLI XLB XLU'.split(' ').map(ax), ax('HYG'), ax('IEF'), ax('^VIX'), ax('TLT'));
+  try { await loadBase(); } catch (e) { $('#board').innerHTML = '<p class="warn">No se encontraron los datos (data/core.json). Ejecuta primero fetch_data.py.</p>'; return; }
+  status(); settings(); tips(); renderTeach(); $('#refresh').onclick = refresh; tweetsInit();
   renderClimate(); renderRanking(false); await renderAll();
   // enlaces directos: #open=SPY abre un activo; #rank calcula el ranking; #s-... baja a la sección
   const hs = decodeURIComponent(location.hash.slice(1)), mo = hs.match(/open=([^&]+)/);
+  if (/tweets/.test(hs)) { document.body.classList.add('tw-on'); TW.unread = 0; renderTweets(); }
+  if (/refresh/.test(hs)) { $('#refresh').click(); await new Promise(r => { const t = setInterval(() => { if (document.body.dataset.refreshed) { clearInterval(t); r(); } }, 100); }); }
   if (/rank/.test(hs)) await renderRanking(true);
   if (mo && asset(mo[1]) && !document.querySelector(`details.row[data-s="${mo[1]}"]`)) { const R = await analyze(mo[1]); $('#board').insertAdjacentHTML('afterbegin', rowHTML(R)); const d0 = $('#board details.row'); d0.addEventListener('toggle', () => { if (d0.open && !d0.dataset.done) { d0.dataset.done = 1; detail(d0); } }); }
   if (mo) { const d = document.querySelector(`details.row[data-s="${mo[1]}"]`); if (d) { d.open = true; await detail(d); d.dataset.done = 1; const how = d.querySelector('details.how'); if (how) how.open = true; d.scrollIntoView(); } }

@@ -5,4 +5,4 @@
 # y solo entonces reemplaza data/ (la anterior queda en data_prev/). Si falla, data/ no se toca y la página sigue igual.
 # Solo cambian los archivos de datos; index.html (el diseño) nunca se reescribe aquí. No publica nada en internet.
 set -euo pipefail; cd "$(dirname "$0")"
-python3 fetch_data.py && python3 validate_report.py && node tests/test_engine.js > /dev/null && echo "OK $(date)"
+python3 fetch_data.py && python3 validate_report.py && node tests/test_engine.js > /dev/null && node tests/test_tweets.js > /dev/null && echo "OK $(date)"
