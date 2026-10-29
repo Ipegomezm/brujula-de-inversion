@@ -1,0 +1,917 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brújula de Inversión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>:root{--paper:#f4efe4;--paper2:#ebe4d4;--ink:#1d1b17;--mute:#6b6457;--line:#d6ccb8;--green:#22543d;--greenS:#2f6b4f22;--red:#7b2230;--redS:#7b223022;--ocre:#a86f12;--ocreS:#a86f1222;--card:#fbf8f1;
+--serif:'Newsreader',Georgia,serif;--sans:'IBM Plex Sans',system-ui,sans-serif;--mono:'IBM Plex Mono',ui-monospace,monospace}
+[data-theme=dark]{--paper:#17150f;--paper2:#201d16;--ink:#ece6d8;--mute:#a39b8a;--line:#3a352a;--green:#6fbf8e;--greenS:#6fbf8e22;--red:#e07a86;--redS:#e07a8622;--ocre:#e0a84a;--ocreS:#e0a84a22;--card:#1d1a14}
+*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);background-image:radial-gradient(circle at 20% 10%,#0000 0,#0000 60%,#00000006 100%),repeating-linear-gradient(0deg,#00000004 0 1px,#0000 1px 3px);color:var(--ink);font:16px/1.55 var(--sans)}
+.wrap{max-width:900px;margin:0 auto;padding:18px 16px 80px}
+h1,h2,h3,.serif{font-family:var(--serif);font-weight:600;letter-spacing:-.01em}
+h1{font-size:2.5rem;margin:.2em 0 0;line-height:1.05}h2{font-size:1.7rem;margin:2.2em 0 .4em;border-top:2px solid var(--ink);padding-top:.5em}h3{font-size:1.2rem;margin:1.2em 0 .3em}
+.lema{font-family:var(--serif);font-style:italic;font-size:1.15rem;color:var(--mute);margin:.2em 0 .8em}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.mute{color:var(--mute)}.small{font-size:.85rem}
+a{color:var(--green)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:8px 0;font-size:.9rem}
+.bar label{display:flex;gap:6px;align-items:center}
+button,select,input{font:inherit;color:inherit;background:var(--card);border:1px solid var(--line);border-radius:4px;padding:4px 8px}
+button{cursor:pointer}button.pri{background:var(--green);color:var(--paper);border-color:var(--green)}
+input[type=number]{width:7em}
+nav{display:flex;flex-wrap:wrap;gap:4px 14px;margin:10px 0;font-size:.9rem}nav a{text-decoration:none;border-bottom:1px solid var(--line)}
+.row{border-bottom:1px solid var(--line)}
+.row>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1.6fr) auto auto auto;gap:4px 12px;align-items:center;padding:10px 2px}
+.row>summary::-webkit-details-marker{display:none}
+.row .nm{font-weight:600;min-width:0}.row .nm small{display:block;font-weight:400;color:var(--mute);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lights{display:flex;gap:3px}.lt{width:15px;height:15px;border-radius:50%;font:9px/15px var(--mono);text-align:center;color:#fff;background:var(--line)}
+.lt.p{background:var(--green)}.lt.m{background:var(--red)}.lt.z{background:var(--ocre)}.lt.n{background:var(--line);color:var(--mute)}
+.concl{font-family:var(--serif);font-weight:600;white-space:nowrap}
+.c-buy{color:var(--green)}.c-sell{color:var(--red)}.c-mid{color:var(--ocre)}
+.up{color:var(--green)}.dn{color:var(--red)}
+.box{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin:10px 0}
+.verdict{border-left:4px solid var(--green)}.verdict.s{border-left-color:var(--red)}.verdict.w{border-left-color:var(--ocre)}
+.verdict .big{font:600 1.6rem/1.2 var(--serif)}
+.lens{border-top:1px dashed var(--line);padding:8px 0}
+.lens .hd{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}.lens .fam{font-size:.75rem;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+.tag{font:600 .78rem var(--sans);padding:1px 7px;border-radius:10px}.tag.p{background:var(--greenS);color:var(--green)}.tag.m{background:var(--redS);color:var(--red)}.tag.z{background:var(--ocreS);color:var(--ocre)}.tag.n{background:var(--paper2);color:var(--mute)}
+details.how>summary{cursor:pointer;color:var(--green);font-size:.88rem;margin-top:4px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;margin:6px 0}th,td{padding:4px 6px;border-bottom:1px solid var(--line);text-align:right}th:first-child,td:first-child{text-align:left}th{font-weight:600;color:var(--mute);font-size:.78rem}
+td{font-family:var(--mono)}td:first-child{font-family:var(--sans)}
+.tbl{overflow-x:auto}
+canvas{width:100%;display:block;margin:6px 0}
+.interp{border:1px dashed var(--ocre);background:var(--ocreS)}.interp .lab{font:600 .75rem var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--ocre)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:12px}
+.card h3{margin:0 0 .2em}.card .live{font-family:var(--mono);color:var(--green);font-size:.9rem;margin-top:6px}
+.therm{height:22px;border-radius:11px;background:linear-gradient(90deg,var(--red),var(--ocre) 45%,#9a9a8a 50%,var(--ocre) 55%,var(--green));position:relative;margin:24px 0 8px}
+.therm .pin{position:absolute;top:-8px;width:4px;height:38px;background:var(--ink);border-radius:2px}
+.meter{height:8px;background:var(--paper2);border-radius:4px;overflow:hidden}.meter>i{display:block;height:100%;background:var(--green)}
+.g{text-decoration:underline dotted;text-underline-offset:3px;cursor:help}
+#tip{position:fixed;z-index:9;max-width:300px;background:var(--ink);color:var(--paper);padding:8px 10px;border-radius:6px;font-size:.85rem;display:none;box-shadow:0 4px 18px #0004}
+.search{display:flex;gap:6px;margin:8px 0}.search input{flex:1;min-width:0}
+.steps label{display:flex;justify-content:space-between;gap:8px;margin:4px 0;flex-wrap:wrap}
+.warn{color:var(--red);font-weight:600}
+.okbad{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.progress{font-size:.85rem;color:var(--mute)}
+@media (max-width:620px){h1{font-size:2rem}.row>summary{grid-template-columns:1fr auto;}.row>summary .lights{grid-column:1}.row>summary .concl{grid-column:2;text-align:right}.grid2,.okbad{grid-template-columns:1fr}.wrap{padding:12px 10px 60px}th,td{padding:3px 4px}table{font-size:.78rem}}
+</style></head><body><div class="wrap">
+<header><div class="mute small" id="asof">Cargando datos…</div><h1>Brújula de Inversión</h1><p class="lema">Ocho miradas. Una conclusión. Y la decisión final, tuya.</p>
+<div class="bar"><label>Invierto en <select id="region"><option value="AU">Australia</option><option value="US">EE.UU.</option></select></label>
+<label>Capital A$ <input type="number" id="capital" min="100" step="100"></label>
+<label>Riesgo <select id="risk"><option value="0.005">0,5%</option><option value="0.01">1%</option><option value="0.02">2%</option></select></label>
+<button id="theme" title="Tema claro u oscuro">◐ Tema</button></div>
+<details class="small"><summary class="mute">Ajustes: comisiones de ejemplo</summary><div class="bar"><label>ASX A$/operación <input type="number" id="feeASX" step="0.5"></label><label>EE.UU. US$/operación <input type="number" id="feeUS" step="0.5"></label><label>Cambio de moneda % <input type="number" id="fxFee" step="0.1"></label></div></details>
+<nav><a href="#s-board">Tablero</a><a href="#s-rank">¿Cuál comprar?</a><a href="#s-clima">El clima</a><a href="#s-lab">Laboratorio</a><a href="#s-start">Empieza aquí</a><a href="#s-champs">Campeones</a><a href="#s-teach">Aprende</a><a href="#s-journal">Bitácora</a><a href="#s-limits">Límites</a></nav></header>
+<section id="s-board"><h2>El tablero</h2><p class="small mute">Toca una fila para ver las ocho miradas, el plan, los niveles y la gráfica. Luces: <b>T T</b> tendencia · <b>I I</b> impulso · <b>C C</b> corto plazo · <b>V</b> volumen · <b>F</b> fundamentos. Verde a favor, ocre duda, vino en contra, gris no aplica.</p>
+<div class="search"><input id="addIn" list="addList" placeholder="Añadir un activo del universo (p. ej. NFLX, BHP.AX)"><datalist id="addList"></datalist><button id="addBtn">Añadir</button><button id="clearBtn" title="Quitar los añadidos">Quitar añadidos</button></div><div id="board"></div></section>
+<section id="s-rank"><h2>¿Cuál comprar?</h2><div id="rank"></div></section>
+<section id="s-clima"><h2>El clima: miedo y codicia</h2><div id="clima"></div></section>
+<section id="s-lab"><h2>¿Cuántas fórmulas deben coincidir?</h2><div id="lab"><p class="progress">Calculando…</p></div></section>
+<section id="s-start"><h2>Empieza aquí</h2><div id="start"></div></section>
+<section id="s-champs"><h2>Los trucos de los campeones</h2><div id="champs"></div></section>
+<section id="s-teach"><h2>Aprende</h2><h3>Las escuelas</h3><div id="schools"></div><h3>Doce lecciones cortas</h3><div id="lessons"></div><h3>Está bien / está mal</h3><div class="okbad" id="okbad"></div></section>
+<section id="s-journal"><h2>Bitácora</h2><div id="journal"></div></section>
+<section id="s-limits"><h2>Límites</h2><ul>
+<li><b>No es en vivo.</b> Usa precios de cierre diarios (Yahoo Finance) y se actualiza una vez al día.</li>
+<li><b>Sesgo de supervivencia.</b> El universo es la lista de hoy: las empresas que cayeron ya no están.</li>
+<li><b>La conclusión es una regla, no una garantía.</b> Que haya funcionado desde 2004 no asegura que funcione mañana.</li>
+<li><b>Impuestos.</b> En Australia, vender antes de 12 meses pierde el descuento del 50% sobre la ganancia de capital.</li>
+<li><b>Datos.</b> Precios ajustados por dividendos y splits (adjclose ÷ close). TradingView solo se usa como comparación (fuente no oficial).</li>
+<li><b>Para aprender.</b> Uso familiar y educativo. No es asesoría financiera.</li></ul></section>
+</div><div id="tip"></div>
+<script>/* Textos fijos (enseñanza). Separados del motor y de la interfaz. */
+window.TXT = {
+lens: {
+ ema: { what: 'Compara el cierre de la semana con la media de las últimas 50 semanas (casi un año).', why: 'Los precios tienden a seguir su dirección durante meses. Estar dentro solo cuando la tendencia sube evita las grandes caídas.', fails: 'En mercados sin dirección: el precio cruza la media una y otra vez y cada cruce cuesta un poco.', src: 'Faber, M. (2007). A Quantitative Approach to Tactical Asset Allocation. Journal of Wealth Management.', f: 'EMA_t = C_t × k + EMA_(t−1) × (1−k), k = 2/51. A favor si cierre semanal > EMA.' },
+ wein: { what: 'La media simple de 30 semanas y hacia dónde apunta. Divide la vida de un precio en cuatro etapas.', why: 'Comprar en la etapa 2 (subida) y salir en la 4 (bajada) evita las bases largas y las caídas.', fails: 'Cuando la media se aplana: las etapas 1 y 3 se confunden y la señal llega tarde.', src: 'Weinstein, S. (1988). Secrets for Profiting in Bull and Bear Markets. McGraw-Hill.', f: 'Etapa 2: cierre > MA30 y MA30 > MA30 de hace 4 semanas. Etapa 4: cierre < MA30 y MA30 baja. Prueba: dentro solo en etapa 2.' },
+ mom: { what: 'Cuánto subió o bajó el precio en 12 meses, sin contar el último mes.', why: 'Lo que subió en el último año suele seguir subiendo unos meses más (impulso). Se salta el último mes porque a corto plazo los precios tienden a devolver.', fails: 'En los giros bruscos del mercado (por ejemplo, rebotes tras una crisis) el impulso se da la vuelta de golpe.', src: 'Jegadeesh, N. y Titman, S. (1993). Returns to Buying Winners and Selling Losers. Journal of Finance. Moskowitz, Ooi y Pedersen (2012), Time Series Momentum.', f: 'Impulso = C[i−4] ÷ C[i−52] − 1 (semanas). A favor si > 0.' },
+ turt: { what: 'Si el precio rompe el máximo de las 20 semanas anteriores (entra) o el mínimo de las 10 anteriores (sale).', why: 'Las grandes tendencias empiezan con una ruptura. Se corta pronto lo que no funciona y se deja correr lo que sí.', fails: 'Muchas rupturas son falsas: entra arriba y sale abajo. Gana pocas veces, pero cuando gana, gana mucho.', src: 'Faith, C. (2007). Way of the Turtle. McGraw-Hill. Reglas de Richard Dennis y Richard Donchian.', f: 'Dentro si cierre semanal > máximo de las 20 semanas anteriores; fuera si cierre < mínimo de las 10 anteriores.' },
+ macd: { what: 'La diferencia entre una media rápida (12 días) y una lenta (26 días), comparada con su propia media de 9 días.', why: 'Detecta cuándo el impulso de corto plazo acelera o se frena.', fails: 'Da muchas señales: en mercados laterales cambia casi cada semana y las comisiones se lo comen.', src: 'Appel, G. (2005). Technical Analysis: Power Tools for Active Investors. FT Press.', f: 'MACD = EMA12 − EMA26 (diario); señal = EMA9 del MACD. A favor si MACD > señal. Histograma = MACD − señal.' },
+ rsi: { what: 'Un RSI muy corto (2 días) para ver si el precio cayó fuerte en pocos días, siempre que esté sobre su media de 200 días.', why: 'Dentro de una subida, las caídas bruscas de dos o tres días suelen rebotar.', fails: 'En caídas largas: lo que parecía un retroceso es el comienzo de una bajada. Por eso no opera bajo la media de 200.', src: 'Connors, L. y Alvarez, C. (2008). Short Term Trading Strategies That Work. Wilder, J. W. (1978). New Concepts in Technical Trading Systems.', f: 'RSI(2) con medias de Wilder. Bajo SMA200: en contra. RSI(2) < 10: a favor. > 90: muy estirado. Prueba: entra con RSI(2) < 10 sobre la SMA200; sale cuando cierra sobre su media de 5 días o bajo la de 200.' },
+ vol: { what: 'Si el volumen acompaña: OBV (suma el volumen de los días que sube y resta el de los que baja) y el flujo de Chaikin (dónde cierra el precio dentro del día).', why: 'Cuando entra dinero de verdad, el volumen sube en los días buenos.', fails: 'En ETF y cripto el volumen se reparte entre muchos mercados; a veces el volumen no dice nada.', src: 'Granville, J. (1963). Granville\'s New Key to Stock Market Profits. Chaikin, M. (flujo de dinero de Chaikin).', f: 'OBV diario vs EMA50(OBV); Chaikin(20) = Σ[((C−L)−(H−C))/(H−L)×V] ÷ ΣV. A favor si OBV > EMA y Chaikin > 0; en contra si ambos al revés. Prueba: dentro con ambos a favor, fuera con ambos en contra, si no sigue igual.' },
+ fund: { what: 'El negocio: cuánto se paga por cada dólar de beneficio (P/E), si los beneficios crecen, si la empresa es rentable (ROE) y qué esperan los analistas.', why: 'A largo plazo el precio sigue a los beneficios. Pagar poco por un buen negocio deja margen de seguridad.', fails: 'Las empresas baratas pueden seguir baratas años. Los analistas suelen ser optimistas. No sirve para oro, cripto ni la mayoría de ETF.', src: 'Graham, B. (1949). The Intelligent Investor. Fama, E. y French, K. (1992). The Cross-Section of Expected Stock Returns.', f: '+1 si P/E esperado < 20, −1 si > 35; +1 crecimiento > 10%, −1 si negativo; +1 ROE > 15%, −1 < 8%; +1 objetivo > precio +10%, −1 si < −3%. A favor ≥ 2; en contra ≤ −1. SPY: P/E histórico vs 20; QQQ vs 25 (+5 = caro).' }
+},
+gloss: {
+ 'índice':'Una cesta que mide un mercado entero, como el S&P 500 (las 500 grandes empresas de EE.UU.).','acción':'Un pedacito de una empresa. Si a la empresa le va bien, la acción suele subir.','ETF':'Un fondo que se compra como una acción y lleva dentro muchas acciones (o oro, o bonos).',
+ 'media de 50 semanas':'El precio promedio del último año, dando más peso a las semanas recientes. Es la regla que decide aquí.','media móvil':'El promedio de los últimos N precios, que se va moviendo cada día.','tendencia':'La dirección de fondo del precio: sube, baja o de lado. Como la corriente de un río.',
+ 'impulso':'Cuánto subió un precio en un periodo. Lo que sube con fuerza suele seguir un tiempo.','volumen':'Cuántas acciones se compraron y vendieron. Mucho volumen = mucha gente opinando.','peor caída':'La mayor bajada desde un máximo hasta un mínimo. Mide cuánto dolor hubo que aguantar.',
+ 'CAGR':'Rendimiento anual compuesto: lo que creció cada año, en promedio, contando el interés sobre el interés.','stop':'Un precio fijado de antemano para salir si la operación sale mal.','retroceso':'Una bajada temporal dentro de una subida.',
+ 'ruptura':'Cuando el precio supera un máximo (o un mínimo) que lo frenaba.','sentimiento':'El ánimo del mercado: miedo o codicia.','VIX':'El "índice del miedo": cuánto esperan que se mueva el S&P 500 en el próximo mes.',
+ 'P/E':'Precio ÷ beneficio por acción. Cuántos años de beneficios pagas al comprar. 20 = pagas 20 años.','ballenas':'Inversores muy grandes (fondos, bancos) que mueven el precio con sus órdenes.','sesgo de supervivencia':'Solo vemos a los que sobrevivieron. Las empresas que quebraron ya no están en la lista, y eso hace que el pasado parezca mejor.',
+ 'OBV':'On-Balance Volume: suma el volumen de los días que sube y resta el de los que baja.','MACD':'Diferencia entre una media rápida y una lenta. Mide si el impulso corto acelera o se frena.','RSI':'Índice de fuerza relativa, de 0 a 100. Muy bajo = cayó mucho en poco tiempo; muy alto = subió mucho.',
+ 'colchón':'Dinero guardado para emergencias (3 a 12 meses de gastos). No se invierte en bolsa.','interés compuesto':'Ganar intereses sobre los intereses. Con años, crece como una bola de nieve.','inflación':'La subida general de precios. Hace que el mismo dinero compre menos cada año.',
+ 'diversificar':'No poner todos los huevos en la misma cesta.','volatilidad':'Cuánto se mueve un precio arriba y abajo. Más volatilidad = más nervios.','correlación':'Si dos precios se mueven juntos (cerca de 1) o cada uno por su lado (cerca de 0).',
+ 'backtest':'Prueba histórica: aplicar una regla al pasado para ver si habría funcionado.','regla del 1%':'No arriesgar más del 1% del capital en una sola operación.','ATR':'Rango verdadero medio: cuánto se mueve el precio en un día (o semana) normal.',
+ 'flujo de Chaikin':'Mide si el precio cierra cerca del máximo (compran) o del mínimo (venden) del día, pesado por el volumen.','dividendo':'Parte del beneficio que la empresa reparte a sus accionistas.','soporte':'Un precio donde muchas veces se frenaron las caídas.',
+ 'resistencia':'Un precio donde muchas veces se frenaron las subidas.','esperanza matemática':'Lo que ganas en promedio por operación: % aciertos × ganancia − % fallos × pérdida.'
+},
+schools: [
+ ['Dow','El mercado se mueve en tendencias: la principal (años), la secundaria (meses) y el ruido (días).','La media de 50 semanas mira la tendencia principal; el MACD, la secundaria.'],
+ ['Triple pantalla de Elder','Mira tres plazos: el largo decide la dirección, el medio busca el momento y el corto afina la entrada.','La media decide; las demás miradas confirman; la zona de compra afina.'],
+ ['Weinstein','Cada acción pasa por cuatro etapas. Solo se compra en la etapa 2.','Es la segunda mirada.'],
+ ['Momentum académico','Lo que más subió en 12 meses suele seguir subiendo un tiempo (Jegadeesh y Titman, 1993).','Tercera mirada y orden del ranking "¿Cuál comprar?".'],
+ ['CAN SLIM (William O\'Neil)','Compra empresas que crecen, con volumen y en mercados sanos; vigila los días de distribución.','Días de distribución en el clima; volumen y fundamentos.'],
+ ['Valor (Graham y Buffett)','Compra buenos negocios cuando están baratos y espera.','Octava mirada (fundamentos) y el termómetro de miedo y codicia.'],
+ ['El contrario','Cuando todos tienen miedo, suele ser buen momento; cuando todos están eufóricos, cuidado.','El clima: tabla de qué hizo el S&P después de cada nivel.'],
+ ['Gestión del riesgo (Tharp y las Tortugas)','Lo que decide si sobrevives no es acertar, sino cuánto pierdes cuando fallas.','El plan: tamaño por riesgo, salida antes de entrar, 3 a 1.']
+],
+lessons: [
+ ['Australia o EE.UU.','Puedes comprar el mismo índice en la bolsa australiana (IVV.AX) o en la de EE.UU. (SPY). Lo que cambia es la moneda: si el dólar australiano baja, lo de EE.UU. vale más en A$.'],
+ ['Acción, índice, fondo','Una acción es una empresa. Un índice es una lista de empresas. Un fondo (ETF) te deja comprar el índice entero de una vez.'],
+ ['Por qué se mueven los precios','Por los beneficios de las empresas a largo plazo; por el miedo y la codicia a corto plazo; por los tipos de interés siempre.'],
+ ['La tendencia es un río','Nadar a favor de la corriente cuesta menos. La media de 50 semanas te dice hacia dónde va el río.'],
+ ['Por qué importan las caídas','Si pierdes 50%, necesitas ganar 100% para volver. Evitar las grandes caídas vale más que acertar cada subida.'],
+ ['La salida antes de entrar','Antes de comprar, decide dónde vas a vender si sale mal. Si no sabes dónde sales, no entres.'],
+ ['La regla del 1%','No arriesgues más del 1% de tu capital en una operación. Así, diez errores seguidos te quitan solo 10%.'],
+ ['El volumen','El volumen dice cuánta gente está detrás de un movimiento. Una subida sin volumen es sospechosa.'],
+ ['El sentimiento','El mercado oscila entre el miedo y la codicia. Los extremos duran poco.'],
+ ['Varias opiniones sobre lo mismo','Ocho miradas no son ocho pruebas distintas: varias miden la misma idea (la tendencia). Por eso aquí decide una y las demás confirman.'],
+ ['Esperanza matemática','Si aciertas 3 de cada 10 veces y cuando aciertas ganas 3 y cuando fallas pierdes 1: 0,3 × 3 − 0,7 × 1 = +0,2 por operación. Ganas sin acertar casi nunca.'],
+ ['Probar antes de creer','Cada regla de esta página se probó con la historia desde 2004. Si una regla no ganó en el pasado, no hay razón para creer que ganará mañana.']
+],
+ok: ['Tener un colchón antes de invertir.','Pagar las deudas de consumo primero.','Invertir cada mes la misma cantidad, sin mirar.','Decidir la salida antes de entrar.','Arriesgar poco en cada operación.','Comprar el índice como núcleo.','Escribir por qué compras.'],
+bad: ['Invertir el dinero que necesitas en un año.','Pedir prestado para invertir.','Comprar porque un amigo ganó mucho.','Poner todo en una sola acción.','Vender en pánico tras una caída.','Mover la salida para no perder.','Creer que una regla es una garantía.']
+};
+</script><script>/* Brújula de Inversión — MOTOR DE CÁLCULO (sin interfaz, sin DOM).
+   Funciona en el navegador (window.Engine) y en Node (module.exports) para poder probarlo.
+   Todas las fórmulas siguen el prompt; los comentarios dicen la sección. */
+(function (root) {
+'use strict';
+const E = {};
+const DAY0 = Date.UTC(1970, 0, 1);
+E.dayStr = d => new Date(DAY0 + d * 864e5).toISOString().slice(0, 10);
+E.SPLIT_DAY = Math.round(Date.UTC(2017, 1, 1) / 864e5);   // "hasta enero de 2017 y desde entonces"
+E.COST = 0.0015;                                           // 0,15% por cambio de posición
+
+/* ---------- datos ---------- */
+E.decode = function (j) {           // t en diferencias -> días; v ÷100 -> ×100
+  const n = j.t.length, d = new Array(n); let acc = 0;
+  for (let i = 0; i < n; i++) { acc += j.t[i]; d[i] = acc; }
+  return { d, o: j.o, h: j.h, l: j.l, c: j.c, v: j.v.map(x => x * 100) };
+};
+E.lastIdxOnOrBefore = function (d, day) {   // búsqueda binaria
+  let lo = 0, hi = d.length - 1, r = -1;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (d[m] <= day) { r = m; lo = m + 1; } else hi = m - 1; }
+  return r;
+};
+E.valueAt = (S, day) => { const i = E.lastIdxOnOrBefore(S.d, day); return i < 0 ? null : S.c[i]; };
+
+/* §3 velas semanales: semana = floor((día+3)/7) */
+E.weekly = function (D) {
+  const W = { wk: [], d: [], o: [], h: [], l: [], c: [], v: [], first: [], last: [] };
+  for (let i = 0; i < D.d.length; i++) {
+    const w = Math.floor((D.d[i] + 3) / 7), n = W.wk.length;
+    if (n && W.wk[n - 1] === w) {
+      const k = n - 1; W.h[k] = Math.max(W.h[k], D.h[i]); W.l[k] = Math.min(W.l[k], D.l[i]);
+      W.c[k] = D.c[i]; W.v[k] += D.v[i]; W.d[k] = D.d[i]; W.last[k] = i;
+    } else {
+      W.wk.push(w); W.d.push(D.d[i]); W.o.push(D.o[i]); W.h.push(D.h[i]); W.l.push(D.l[i]);
+      W.c.push(D.c[i]); W.v.push(D.v[i]); W.first.push(i); W.last.push(i);
+    }
+  }
+  return W;
+};
+
+/* ---------- indicadores ---------- */
+E.ema = function (a, n) {           // EMA_t = x_t·k + EMA_(t−1)·(1−k), k = 2/(n+1); arranca en el primer valor
+  const k = 2 / (n + 1), out = new Array(a.length); let e = null;
+  for (let i = 0; i < a.length; i++) { const x = a[i]; if (x == null) { out[i] = e; continue; } e = e == null ? x : x * k + e * (1 - k); out[i] = e; }
+  return out;
+};
+E.sma = function (a, n) {
+  const out = new Array(a.length).fill(null); let s = 0;
+  for (let i = 0; i < a.length; i++) { s += a[i]; if (i >= n) s -= a[i - n]; if (i >= n - 1) out[i] = s / n; }
+  return out;
+};
+E.rsi = function (c, n) {           // RSI con medias de Wilder
+  const out = new Array(c.length).fill(null); let ag = 0, al = 0;
+  for (let i = 1; i < c.length; i++) {
+    const ch = c[i] - c[i - 1], g = Math.max(ch, 0), l = Math.max(-ch, 0);
+    if (i <= n) { ag += g / n; al += l / n; if (i === n) out[i] = al === 0 ? 100 : 100 - 100 / (1 + ag / al); }
+    else { ag = (ag * (n - 1) + g) / n; al = (al * (n - 1) + l) / n; out[i] = al === 0 ? 100 : 100 - 100 / (1 + ag / al); }
+  }
+  return out;
+};
+E.atr = function (h, l, c, n) {     // ATR de Wilder
+  const out = new Array(c.length).fill(null); let a = 0;
+  for (let i = 0; i < c.length; i++) {
+    const tr = i ? Math.max(h[i] - l[i], Math.abs(h[i] - c[i - 1]), Math.abs(l[i] - c[i - 1])) : h[i] - l[i];
+    if (i < n) { a += tr / n; if (i === n - 1) out[i] = a; } else { a = (a * (n - 1) + tr) / n; out[i] = a; }
+  }
+  return out;
+};
+E.macdFull = function (c) {
+  const e12 = E.ema(c, 12), e26 = E.ema(c, 26), m = e12.map((x, i) => x - e26[i]), s = E.ema(m, 9);
+  return { m, s, h: m.map((x, i) => x - s[i]) };
+};
+E.obv = function (c, v) { const o = [0]; for (let i = 1; i < c.length; i++) o.push(o[i - 1] + (c[i] > c[i - 1] ? v[i] : c[i] < c[i - 1] ? -v[i] : 0)); return o; };
+E.chaikin = function (h, l, c, v, n) {   // Σ[((C−L)−(H−C))/(H−L)×V] ÷ ΣV
+  const out = new Array(c.length).fill(null); const mf = c.map((x, i) => h[i] > l[i] ? ((x - l[i]) - (h[i] - x)) / (h[i] - l[i]) * v[i] : 0);
+  let a = 0, b = 0;
+  for (let i = 0; i < c.length; i++) { a += mf[i]; b += v[i]; if (i >= n) { a -= mf[i - n]; b -= v[i - n]; } if (i >= n - 1) out[i] = b > 0 ? a / b : null; }
+  return out;
+};
+E.rollMax = (a, n, i) => { let m = -Infinity; for (let j = Math.max(0, i - n + 1); j <= i; j++) m = Math.max(m, a[j]); return m; };
+E.rollMin = (a, n, i) => { let m = Infinity; for (let j = Math.max(0, i - n + 1); j <= i; j++) m = Math.min(m, a[j]); return m; };
+
+/* ---------- prueba histórica (§6) ----------
+   sig[i] = exposición (0..1) decidida al cierre del día i; se ejecuta en la apertura de i+1.
+   a[i] = exposición durante el día i = sig[i−1]. Noche (c[i−1]→o[i]) con a[i−1]; día (o[i]→c[i]) con a[i].
+   Costo 0,15% × |cambio de exposición|. */
+E.backtest = function (D, sig, start) {
+  const n = D.d.length, eq = new Array(n).fill(null), pos = new Array(n).fill(0), bh = new Array(n).fill(null);
+  eq[start] = 1; bh[start] = 1; let prevA = 0, trades = [], cur = null;
+  for (let i = start + 1; i < n; i++) {
+    const a = sig[i - 1] == null ? 0 : sig[i - 1];
+    let f = (1 + prevA * (D.o[i] / D.c[i - 1] - 1));
+    if (a !== prevA) {
+      f *= 1 - E.COST * Math.abs(a - prevA);
+      if (prevA === 0 && a > 0) cur = { in: i, eqIn: eq[i - 1] * f };
+      if (prevA > 0 && a === 0 && cur) { const eqOut = eq[i - 1] * f; trades.push({ in: cur.in, out: i, r: eqOut / cur.eqIn - 1 }); cur = null; }
+    }
+    f *= (1 + a * (D.c[i] / D.o[i] - 1));
+    eq[i] = eq[i - 1] * f; pos[i] = a; prevA = a;
+    bh[i] = D.c[i] / D.c[start];
+  }
+  if (cur) trades.push({ in: cur.in, out: n - 1, r: eq[n - 1] / cur.eqIn - 1, open: true });
+  return { eq, bh, pos, trades, start };
+};
+E.stats = function (D, eq, s, e) {
+  if (s == null || e - s < 20) return null;
+  let peak = eq[s], dd = 0;
+  for (let i = s; i <= e; i++) { peak = Math.max(peak, eq[i]); dd = Math.min(dd, eq[i] / peak - 1); }
+  const yrs = (D.d[e] - D.d[s]) / 365.25, cagr = Math.pow(eq[e] / eq[s], 1 / yrs) - 1;
+  return { cagr, dd, ratio: dd < 0 ? cagr / -dd : null, yrs, from: D.d[s], to: D.d[e] };
+};
+E.periods = function (D, start) {   // dos periodos: hasta ene-2017 y desde; si es joven, por la mitad
+  const n = D.d.length - 1, si = E.lastIdxOnOrBefore(D.d, E.SPLIT_DAY - 1);
+  if (D.d[start] < E.SPLIT_DAY - 5 * 365) return [[start, si], [si, n]];
+  const mid = Math.floor((start + n) / 2); return [[start, mid], [mid, n]];
+};
+E.beats = function (r, b) {          // gana en un periodo
+  if (!r || !b) return false;
+  if (r.cagr > b.cagr) return true;
+  return r.ratio != null && b.ratio != null && r.ratio >= 0.9 * b.ratio && (r.dd - b.dd) >= 0.05;
+};
+E.evaluate = function (D, sig, start) {
+  const bt = E.backtest(D, sig, start), n = D.d.length - 1;
+  const all = E.stats(D, bt.eq, start, n), allB = E.stats(D, bt.bh, start, n);
+  const per = E.periods(D, start).map(([s, e]) => {
+    const bhSeg = bt.bh, r = E.stats(D, bt.eq, s, e), b = E.stats(D, bhSeg, s, e);
+    return { s, e, rule: r, hold: b, win: E.beats(r, b) };
+  });
+  const wins = per.filter(p => p.win).length, nt = bt.trades.length;
+  const verdict = nt < 4 ? 'Pocos datos' : wins === 2 ? 'Probada' : wins === 1 ? 'Funcionó a medias' : 'No ganó a mantener';
+  const winPct = nt ? bt.trades.filter(t => t.r > 0).length / nt : null;
+  const inTime = bt.pos.slice(start).filter(x => x > 0).length / (n - start + 1);
+  return { verdict, all, hold: allB, per, trades: nt, winPct, inTime, bt };
+};
+
+/* ---------- las ocho miradas (§4) ---------- */
+function weeklyToDaily(W, wsig, n) {  // señal semanal decidida al cierre del último día de la semana
+  const s = new Array(n).fill(null);
+  for (let k = 0; k < W.wk.length; k++) s[W.last[k]] = wsig[k];
+  let cur = null; for (let i = 0; i < n; i++) { if (s[i] != null) cur = s[i]; else s[i] = cur; }
+  return s;
+}
+E.weeklyToDaily = weeklyToDaily;
+function hysteresis(a) { let cur = null; return a.map(x => { if (x === 1 || x === 0) cur = x; return cur; }); }
+
+E.prepare = function (D) {
+  const W = E.weekly(D), n = D.d.length;
+  const X = { D, W };
+  X.ema50 = E.ema(W.c, 50); X.ma30 = E.sma(W.c, 30);
+  X.atrW = E.atr(W.h, W.l, W.c, 14); X.atrD = E.atr(D.h, D.l, D.c, 22);
+  X.mac = E.macdFull(D.c); X.rsi2 = E.rsi(D.c, 2); X.sma200 = E.sma(D.c, 200); X.sma5 = E.sma(D.c, 5);
+  X.obv = E.obv(D.c, D.v); X.obvE = E.ema(X.obv, 50); X.chk = E.chaikin(D.h, D.l, D.c, D.v, 20);
+  // señales semanales (1 = dentro, 0 = fuera)
+  const nw = W.c.length;
+  X.wEma = W.c.map((c, k) => k < 49 ? null : (c > X.ema50[k] ? 1 : 0));
+  X.wWein = W.c.map((c, k) => (k < 33 || X.ma30[k - 4] == null) ? null : (c > X.ma30[k] && X.ma30[k] > X.ma30[k - 4] ? 1 : 0));
+  X.wMom = W.c.map((c, k) => k < 52 ? null : (W.c[k - 4] / W.c[k - 52] - 1 > 0 ? 1 : 0));
+  const turt = new Array(nw).fill(null); let st = 0;
+  for (let k = 20; k < nw; k++) {
+    const hi = E.rollMax(W.h, 20, k - 1), lo = E.rollMin(W.l, 10, k - 1);
+    if (W.c[k] > hi) st = 1; else if (W.c[k] < lo) st = 0; turt[k] = st;
+  }
+  X.wTurt = turt;
+  // señales diarias para la prueba
+  X.sEma = weeklyToDaily(W, X.wEma, n); X.sWein = weeklyToDaily(W, X.wWein, n);
+  X.sMom = weeklyToDaily(W, X.wMom, n); X.sTurt = weeklyToDaily(W, X.wTurt, n);
+  X.sMacd = D.c.map((_, i) => i < 35 ? null : (X.mac.m[i] > X.mac.s[i] ? 1 : 0));
+  const rs = new Array(n).fill(null); let inn = 0;          // Connors: entra RSI2<10 sobre SMA200; sale cierre > SMA5 o bajo SMA200
+  for (let i = 200; i < n; i++) {
+    if (!inn && D.c[i] > X.sma200[i] && X.rsi2[i] < 10) inn = 1;
+    else if (inn && (D.c[i] > X.sma5[i] || D.c[i] < X.sma200[i])) inn = 0;
+    rs[i] = inn;
+  }
+  X.sRsi = rs;
+  X.sVol = hysteresis(D.c.map((_, i) => i < 50 || X.chk[i] == null ? null :
+    (X.obv[i] > X.obvE[i] && X.chk[i] > 0 ? 1 : X.obv[i] < X.obvE[i] && X.chk[i] < 0 ? 0 : null)));
+  // inicio común de las pruebas: primer día con la EMA de 50 semanas definida (y al menos 52 semanas)
+  const k0 = Math.min(52, nw - 1); X.start = Math.min(W.last[k0], n - 2);
+  return X;
+};
+
+const sgnTxt = s => s === 1 ? 'A favor' : s === -1 ? 'En contra' : s === 0 ? 'Duda' : 'No aplica';
+E.sgnTxt = sgnTxt;
+const pct = (x, d = 1) => x == null || !isFinite(x) ? '—' : (x * 100).toFixed(d).replace('.', ',') + '%';
+const num = (x, d = 2) => x == null || !isFinite(x) ? '—' : x.toLocaleString('es-ES', { minimumFractionDigits: d, maximumFractionDigits: d });
+E.pct = pct; E.num = num;
+
+E.lenses = function (X, ctx) {
+  const { D, W } = X, k = W.c.length - 1, i = D.d.length - 1, out = [];
+  const meta = ctx.meta || {}, f = ctx.fund || {};
+  // 1. EMA 50 semanas
+  { const c = W.c[k], e = X.ema50[k], dist = c / e - 1;
+    out.push({ id: 'ema', fam: 'Tendencia', L: 'T', name: 'Media de 50 semanas', s: c > e ? 1 : -1, ema: e, dist,
+      near: Math.abs(dist) < 0.03, ev: E.evaluate(D, X.sEma, X.start), sig: X.sEma,
+      txt: (c > e ? `El precio (${num(c)}) está ${pct(dist)} sobre su media de 50 semanas (${num(e)}). La tendencia larga sube.`
+                  : `El precio (${num(c)}) está ${pct(-dist)} bajo su media de 50 semanas (${num(e)}). La tendencia larga baja.`) +
+        (Math.abs(dist) < 0.03 ? ' Muy cerca: puede cambiar esta semana.' : '') }); }
+  // 2. Weinstein
+  { const c = W.c[k], m = X.ma30[k], m4 = X.ma30[k - 4];
+    let st, s; if (m == null || m4 == null) { st = 'sin datos'; s = null; }
+    else if (c > m && m > m4) { st = 2; s = 1; } else if (c < m && m < m4) { st = 4; s = -1; } else { st = c > m ? 3 : 1; s = 0; }
+    const map = { 1: 'Etapa 1 (base): el precio duerme, todavía no sube.', 2: 'Etapa 2 (subida): sobre la media de 30 semanas y la media sube.',
+      3: 'Etapa 3 (techo): sobre la media, pero la media ya no sube.', 4: 'Etapa 4 (bajada): bajo la media de 30 semanas y la media baja.' };
+    out.push({ id: 'wein', fam: 'Tendencia', L: 'T', name: 'Etapas de Weinstein', s, stage: st, ma30: m,
+      ev: E.evaluate(D, X.sWein, X.start), sig: X.sWein, txt: map[st] || 'Faltan semanas.' }); }
+  // 3. Impulso 12 meses (salta el último mes)
+  { const m = k >= 52 ? W.c[k - 4] / W.c[k - 52] - 1 : null, spy = ctx.spyMom;
+    out.push({ id: 'mom', fam: 'Impulso', L: 'I', name: 'Impulso de 12 meses', s: m == null ? null : m > 0 ? 1 : -1, mom: m, spyMom: spy,
+      ev: E.evaluate(D, X.sMom, X.start), sig: X.sMom,
+      txt: m == null ? 'Faltan semanas.' : `En 12 meses (sin el último) ${m > 0 ? 'subió' : 'bajó'} ${pct(Math.abs(m))}. El S&P 500: ${pct(spy)}.` }); }
+  // 4. Tortugas 20 semanas
+  { const inn = X.wTurt[k] === 1, hi = E.rollMax(W.h, 20, k - 1), lo = E.rollMin(W.l, 10, k - 1);
+    out.push({ id: 'turt', fam: 'Impulso', L: 'I', name: 'Ruptura de 20 semanas (Tortugas)', s: inn ? 1 : -1, entry: hi, exit: lo,
+      ev: E.evaluate(D, X.sTurt, X.start), sig: X.sTurt,
+      txt: inn ? `Dentro. Sale si una semana cierra bajo ${num(lo)} (mínimo de 10 semanas).` : `Fuera. Entra si una semana cierra sobre ${num(hi)} (máximo de 20 semanas).` }); }
+  // 5. MACD diario
+  { const m = X.mac.m[i], s = X.mac.s[i], h = X.mac.h[i], hy = X.mac.h[i - 1];
+    out.push({ id: 'macd', fam: 'Corto plazo', L: 'C', name: 'MACD diario', s: m > s ? 1 : -1, slowing: Math.abs(h) < Math.abs(hy),
+      ev: E.evaluate(D, X.sMacd, X.start), sig: X.sMacd,
+      txt: (m > s ? 'El impulso corto empuja hacia arriba.' : 'El impulso corto empuja hacia abajo.') + (h < hy && m > s ? ' Se está frenando.' : h > hy && m < s ? ' La caída se está frenando.' : '') }); }
+  // 6. RSI(2) Connors
+  { const r = X.rsi2[i], below = D.c[i] < X.sma200[i]; let s, t;
+    if (X.sma200[i] == null) { s = null; t = 'Faltan 200 días.'; }
+    else if (below) { s = -1; t = 'Bajo la media de 200 días: este trader no opera bajo la media de 200.'; }
+    else if (r < 10) { s = 1; t = `RSI(2) = ${num(r, 0)}: retroceso dentro de una subida. Ocasión de compra corta.`; }
+    else if (r > 90) { s = 0; t = `RSI(2) = ${num(r, 0)}: muy estirado.`; } else { s = 0; t = `RSI(2) = ${num(r, 0)}: nada que hacer.`; }
+    out.push({ id: 'rsi', fam: 'Corto plazo', L: 'C', name: 'Retroceso RSI(2) (Connors)', s, rsi2: r, ev: E.evaluate(D, X.sRsi, X.start), sig: X.sRsi, txt: t }); }
+  // 7. Volumen
+  { const last = D.v.slice(-250), zero = last.filter(x => !x).length;
+    if (zero > 0.1 * last.length) out.push({ id: 'vol', fam: 'Volumen', L: 'V', name: 'Volumen', s: null, na: true, txt: 'No aplica: faltan datos de volumen.' });
+    else {
+      const a = X.obv[i] > X.obvE[i], b = X.chk[i] > 0, s = a && b ? 1 : !a && !b ? -1 : 0;
+      const m1 = D.v.slice(-21).reduce((x, y) => x + y, 0) / 21, y1 = last.reduce((x, y) => x + y, 0) / last.length;
+      out.push({ id: 'vol', fam: 'Volumen', L: 'V', name: 'Volumen', s, obvUp: a, chaikin: X.chk[i], volRatio: m1 / y1,
+        ev: E.evaluate(D, X.sVol, X.start), sig: X.sVol,
+        txt: `OBV ${a ? 'sobre' : 'bajo'} su media; flujo de Chaikin ${num(X.chk[i], 2)}. ${s === 1 ? 'Entra dinero.' : s === -1 ? 'Sale dinero.' : 'Señales mezcladas.'} Volumen del último mes: ${pct(m1 / y1 - 1, 0)} frente a su media anual.` });
+    } }
+  // 8. Fundamentos
+  { const sym = ctx.sym, kind = ctx.kind; let s = null, t, pts = null, parts = [];
+    if (kind === 'metal' || kind === 'crypto') t = 'No aplica, no produce beneficios.';
+    else if (sym === 'SPY' || sym === 'QQQ' || sym === 'IVV.AX' || sym === 'NDQ.AX') {
+      const lim = (sym === 'SPY' || sym === 'IVV.AX') ? 20 : 25, pe = f.trailingPE != null ? f.trailingPE : (ctx.twinFund || {}).trailingPE;
+      if (pe == null) t = 'No aplica: sin P/E publicado.';
+      else { s = pe < lim ? 1 : pe > lim + 5 ? -1 : 0; t = `P/E histórico ${num(pe, 1)} frente a ${lim} (sobre ${lim + 5} = caro). ${s === 1 ? 'Barato.' : s === -1 ? 'Caro.' : 'Precio justo o algo alto.'}`; }
+    } else if (kind === 'etf') t = 'No aplica.';
+    else {
+      pts = 0; const pe = f.forwardPE != null && f.forwardPE > 0 ? f.forwardPE : f.trailingPE;
+      if (pe != null) { const p = pe < 20 ? 1 : pe > 35 ? -1 : 0; pts += p; parts.push(`P/E ${num(pe, 1)} (${p > 0 ? '+1' : p < 0 ? '−1' : '0'})`); }
+      if (f.earningsGrowth != null) { const g = f.earningsGrowth, p = g > 0.1 ? 1 : g < 0 ? -1 : 0; pts += p; parts.push(`beneficios ${pct(g, 0)} (${p > 0 ? '+1' : p < 0 ? '−1' : '0'})`); }
+      if (f.returnOnEquity != null) { const r = f.returnOnEquity, p = r > 0.15 ? 1 : r < 0.08 ? -1 : 0; pts += p; parts.push(`ROE ${pct(r, 0)} (${p > 0 ? '+1' : p < 0 ? '−1' : '0'})`); }
+      const px = ctx.lastClose;
+      if (f.targetMeanPrice != null && px) { const u = f.targetMeanPrice / (f.currentPrice || px) - 1, p = u > 0.1 ? 1 : u < -0.03 ? -1 : 0; pts += p; parts.push(`objetivo analistas ${pct(u, 0)} (${p > 0 ? '+1' : p < 0 ? '−1' : '0'})`); }
+      if (!parts.length) t = 'No aplica: sin datos del negocio.';
+      else { s = pts >= 2 ? 1 : pts <= -1 ? -1 : 0; t = `${pts > 0 ? '+' : ''}${pts} puntos: ${parts.join('; ')}.`; }
+    }
+    out.push({ id: 'fund', fam: 'Fundamentos', L: 'F', name: 'Fundamentos', s, pts, na: s === null, txt: t });
+  }
+  return out;
+};
+
+/* §5 conclusión */
+E.conclude = function (L, X) {
+  const ema = L[0], others = L.slice(1).filter(x => x.s !== null && !x.na);
+  const n = others.length, need = Math.ceil(n * 0.6), fav = others.filter(x => x.s === 1).length, con = others.filter(x => x.s === -1).length;
+  const above = ema.s === 1; let label, warn = null;
+  if (above) { label = fav >= need ? 'Comprar o mantener' : con >= need ? 'Mantener con cuidado' : 'Mantener';
+    if (ema.dist > 0.15) warn = 'Muy estirado: entra por partes o espera un retroceso.'; }
+  else label = con >= need ? 'Vender o no comprar' : 'Esperar';
+  const trigger = above ? `Pasa a VENDER si una semana cierra bajo ${num(ema.ema)}.` : `Pasa a COMPRAR si una semana cierra sobre ${num(ema.ema)}.`;
+  const v = ema.ev.verdict, agree = above ? fav >= need : con >= need, years = (X.D.d[X.D.d.length - 1] - X.D.d[0]) / 365.25;
+  let conf, why;
+  if (v === 'No ganó a mantener' || v === 'Pocos datos' || years < 3) { conf = 'Baja';
+    why = years < 3 ? 'Hay menos de tres años de historia.' : v === 'Pocos datos' ? 'La regla de la media tiene pocas operaciones en este activo.' : 'La regla de la media no le ganó a no tocar en este activo.'; }
+  else if (v === 'Probada' && agree) { conf = 'Alta'; why = `La regla de la media está probada aquí y ${above ? fav : con} de ${n} miradas coinciden.`; }
+  else { conf = 'Media'; why = v === 'Probada' ? `La regla está probada aquí, pero solo ${above ? fav : con} de ${n} miradas coinciden (hacen falta ${need}).` : 'La regla de la media funcionó solo en uno de los dos periodos.'; }
+  return { label, warn, trigger, conf, why, need, n, fav, con, above };
+};
+
+/* §7 plan */
+E.plan = function (X, L, opt) {   // opt: {capital (A$), risk, fx (AUDUSD), usd}
+  const { D, W } = X, k = W.c.length - 1, i = D.d.length - 1, c = D.c[i], ema = X.ema50[k], atrW = X.atrW[k];
+  const toA = x => opt.usd ? x / opt.fx : x, above = L[0].s === 1;
+  let entry, exit, zoneLo = null, zoneHi = null, trail = null;
+  if (above) { zoneHi = c; zoneLo = Math.max(c - 0.5 * atrW, ema); entry = c; exit = ema;
+    trail = E.rollMax(D.c, 22, i) - 3 * X.atrD[i]; }
+  else { entry = ema; exit = ema - 2 * atrW; }
+  const dist = Math.max(entry - exit, 0.02 * entry), riskA = opt.capital * opt.risk;
+  let units = riskA / toA(dist); const capUnits = opt.capital / toA(entry); let capped = false;
+  if (units > capUnits) { units = capUnits; capped = true; }
+  const costA = units * toA(entry), lossA = units * toA(dist), target = entry + 3 * dist;
+  return { above, entry, exit, zoneLo, zoneHi, trail, dist, units, costA, lossA, target, capped, riskA, atrW };
+};
+
+/* §8 niveles */
+function touches(series, level, tol) { let t = 0, inRun = false; for (const x of series) { const hit = Math.abs(x / level - 1) <= tol; if (hit && !inRun) t++; inRun = hit; } return t; }
+E.touches = touches;
+E.levels = function (X) {
+  const { D, W } = X, k = W.c.length - 1, c = W.c[k];
+  const hi20 = E.rollMax(W.h, 20, k), lo20 = E.rollMin(W.l, 20, k), hs = W.h.slice(-20), ls = W.l.slice(-20);
+  const tH = touches(hs, hi20, 0.015), tL = touches(ls, lo20, 0.015);
+  const hi52 = E.rollMax(W.h, 52, k), lo52 = E.rollMin(W.l, 52, k);
+  // Cava: nivel al que el precio volvió más veces en el último año
+  function best(hiA, loA, tol) {
+    let bl = null, bt = -1; const cand = hiA.concat(loA);
+    for (const lv of cand) { let t = 0, inRun = false;
+      for (let j = 0; j < hiA.length; j++) { const hit = Math.abs(hiA[j] / lv - 1) <= tol || Math.abs(loA[j] / lv - 1) <= tol; if (hit && !inRun) t++; inRun = hit; }
+      if (t > bt) { bt = t; bl = lv; } }
+    return { level: bl, touches: bt };
+  }
+  const nd = Math.min(252, D.c.length), dly = best(D.h.slice(-nd), D.l.slice(-nd), 0.01), wky = best(W.h.slice(-52), W.l.slice(-52), 0.015);
+  const gap = Math.abs(dly.level / wky.level - 1), price = D.c[D.c.length - 1];
+  let zone, other = null;
+  if (gap <= 0.04) zone = [Math.min(dly.level, wky.level), Math.max(dly.level, wky.level)];
+  else { const [a, b] = Math.abs(dly.level - price) < Math.abs(wky.level - price) ? [dly, wky] : [wky, dly];
+    zone = [a.level, a.level]; other = { level: b.level, kind: b.level < price ? 'siguiente piso' : 'siguiente techo' }; }
+  const mid = (zone[0] + zone[1]) / 2, isSupport = mid < price, total = dly.touches + wky.touches;
+  return { hi20, lo20, tH, tL, posRange: (c - lo20) / (hi20 - lo20 || 1), hi52, lo52, gh: price / hi52,
+    cava: { daily: dly, weekly: wky, zone, other, isSupport, total, weak: isSupport && total >= 6 } };
+};
+
+/* utilidades de series */
+E.align = function (S, days) { return days.map(d => E.valueAt(S, d)); };
+E.retOver = function (S, years) { const i = S.d.length - 1, j = E.lastIdxOnOrBefore(S.d, S.d[i] - Math.round(years * 365.25)); return j < 0 || S.d[j] > S.d[i] - years * 365.25 + 10 ? null : S.c[i] / S.c[j] - 1; };
+E.toAUD = function (S, FX) {        // serie en US$ -> A$ (÷ AUDUSD del mismo día)
+  const c = S.c.map((x, i) => { const fx = E.valueAt(FX, S.d[i]); return fx ? x / fx : null; });
+  const keep = c.map((x, i) => x != null ? i : -1).filter(i => i >= 0);
+  return { d: keep.map(i => S.d[i]), c: keep.map(i => c[i]) };
+};
+E.cagrOf = (S, years) => { const r = E.retOver(S, years); return r == null ? null : Math.pow(1 + r, 1 / years) - 1; };
+E.maxDD = function (c, from = 0) { let p = c[from], dd = 0; for (let i = from; i < c.length; i++) { p = Math.max(p, c[i]); dd = Math.min(dd, c[i] / p - 1); } return dd; };
+
+/* §10 frente al S&P 500 en A$ (IVV.AX) */
+E.versus = function (A, B) {        // A, B: {d,c} en la misma moneda
+  const days = A.d.filter(d => d >= B.d[0]); const a = days.map(d => E.valueAt(A, d)), b = days.map(d => E.valueAt(B, d));
+  const S = { d: days, c: a }, T = { d: days, c: b }, res = {};
+  for (const y of [1, 3, 5]) { const i0 = E.lastIdxOnOrBefore(days, days[days.length - 1] - Math.round(y * 365.25));
+    res[y] = i0 < 0 || days[i0] < days[days.length-1] - y*365.25 - 10 ? null : { a: a[a.length - 1] / a[i0] - 1, b: b[b.length - 1] / b[i0] - 1, ddA: E.maxDD(a, i0), ddB: E.maxDD(b, i0) }; }
+  res.all = { a: a[a.length - 1] / a[0] - 1, b: b[b.length - 1] / b[0] - 1, ddA: E.maxDD(a), ddB: E.maxDD(b), from: days[0] };
+  // años calendario
+  const yrs = {}; days.forEach((d, i) => { const y = E.dayStr(d).slice(0, 4); (yrs[y] = yrs[y] || { s: i, e: i }).e = i; });
+  const ys = Object.keys(yrs).sort(); let won = 0, tot = 0, list = [];
+  ys.forEach((y, j) => { const s = j ? yrs[ys[j - 1]].e : yrs[y].s, e = yrs[y].e; if (j === 0 && E.dayStr(days[s]).slice(5) > '01-15') return;
+    const ra = a[e] / a[s] - 1, rb = b[e] / b[s] - 1; tot++; if (ra > rb) won++; list.push({ y, ra, rb }); });
+  res.years = { won, tot, list };
+  // volatilidad anual y correlación (5 años, semanal)
+  const wk = []; for (let i = days.length - 1; i >= 0 && days[i] >= days[days.length - 1] - 5 * 365.25; i -= 5) wk.unshift(i);
+  const ra = [], rb = []; for (let j = 1; j < wk.length; j++) { ra.push(a[wk[j]] / a[wk[j - 1]] - 1); rb.push(b[wk[j]] / b[wk[j - 1]] - 1); }
+  const mean = x => x.reduce((s, y) => s + y, 0) / x.length, sd = x => { const m = mean(x); return Math.sqrt(x.reduce((s, y) => s + (y - m) ** 2, 0) / (x.length - 1)); };
+  const ma = mean(ra), mb = mean(rb), cov = ra.reduce((s, x, j) => s + (x - ma) * (rb[j] - mb), 0) / (ra.length - 1);
+  res.volA = sd(ra) * Math.sqrt(52); res.volB = sd(rb) * Math.sqrt(52); res.corr = cov / (sd(ra) * sd(rb));
+  return res;
+};
+
+/* §12 clima: miedo y codicia */
+E.climate = function (spy, sectors, hyg, ief, vix, tlt) {
+  const days = spy.d, n = days.length, al = S => E.align(S, days);
+  const sp = spy.c, sma125 = E.sma(sp, 125), Hy = al(hyg), If = al(ief), Vx = al(vix), Tl = al(tlt);
+  const vs50 = E.sma(Vx.map(x => x == null ? NaN : x), 50);
+  const secA = sectors.map(al);
+  const comp = { mom: [], str: [], brd: [], risk: [], vol: [], safe: [] };
+  const sec50 = secA.map(s => E.sma(s.map(x => x == null ? NaN : x), 50));
+  for (let i = 0; i < n; i++) {
+    comp.mom.push(sma125[i] ? sp[i] / sma125[i] - 1 : null);
+    if (i >= 252 && secA.every(s => s[i - 252] != null)) {
+      let hi = 0, lo = 0, ab = 0;
+      secA.forEach((s, j) => { let mx = -Infinity, mn = Infinity; for (let q = i - 251; q <= i; q++) { mx = Math.max(mx, s[q]); mn = Math.min(mn, s[q]); }
+        if (s[i] >= mx * 0.97) hi++; if (s[i] <= mn * 1.03) lo++; if (s[i] > sec50[j][i]) ab++; });
+      comp.str.push((hi - lo) / 9); comp.brd.push(ab / 9);
+    } else { comp.str.push(null); comp.brd.push(null); }
+    const r20 = (x, j) => x[j] != null && x[j - 20] != null ? x[j] / x[j - 20] - 1 : null;
+    comp.risk.push(i >= 20 && r20(Hy, i) != null && r20(If, i) != null ? r20(Hy, i) - r20(If, i) : null);
+    comp.vol.push(Vx[i] != null && isFinite(vs50[i]) ? -(Vx[i] / vs50[i] - 1) : null);
+    comp.safe.push(i >= 20 && r20(Tl, i) != null ? (sp[i] / sp[i - 20] - 1) - r20(Tl, i) : null);
+  }
+  const pctl = {}; const keys = Object.keys(comp);
+  for (const key of keys) { const a = comp[key], p = new Array(n).fill(null);
+    for (let i = 0; i < n; i++) { if (a[i] == null) continue; let cnt = 0, le = 0;
+      for (let q = Math.max(0, i - 755); q <= i; q++) if (a[q] != null) { cnt++; if (a[q] <= a[i]) le++; }
+      if (cnt >= 252) p[i] = le / cnt * 100; }
+    pctl[key] = p; }
+  const fg = days.map((_, i) => keys.every(k => pctl[k][i] != null) ? keys.reduce((s, k) => s + pctl[k][i], 0) / keys.length : null);
+  const zone = v => v == null ? null : v < 25 ? 'Miedo extremo' : v < 45 ? 'Miedo' : v <= 55 ? 'Neutral' : v <= 75 ? 'Codicia' : 'Codicia extrema';
+  // tabla: qué hizo el S&P a 3 meses y 1 año después de cada nivel
+  const Z = ['Miedo extremo', 'Miedo', 'Neutral', 'Codicia', 'Codicia extrema'], tbl = {};
+  Z.forEach(z => tbl[z] = { r3: [], r12: [] });
+  for (let i = 0; i < n; i++) { const z = zone(fg[i]); if (!z) continue;
+    if (i + 63 < n) tbl[z].r3.push(sp[i + 63] / sp[i] - 1); if (i + 252 < n) tbl[z].r12.push(sp[i + 252] / sp[i] - 1); }
+  const med = a => { if (!a.length) return null; const s = a.slice().sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+  const table = Z.map(z => ({ z, n3: tbl[z].r3.length, m3: med(tbl[z].r3), p3: tbl[z].r3.length ? tbl[z].r3.filter(x => x > 0).length / tbl[z].r3.length : null,
+    n12: tbl[z].r12.length, m12: med(tbl[z].r12), p12: tbl[z].r12.length ? tbl[z].r12.filter(x => x > 0).length / tbl[z].r12.length : null }));
+  const last = n - 1, now = {}; keys.forEach(k => now[k] = { raw: comp[k][last], p: pctl[k][last] });
+  const firstFg = fg.findIndex(x => x != null);
+  return { value: fg[last], zone: zone(fg[last]), now, table, fg, days, from: days[firstFg], zoneOf: zone };
+};
+E.distributionDays = function (D, n = 25) {   // O'Neil: caída > 0,2% con más volumen que el día anterior
+  const out = []; for (let i = D.c.length - n; i < D.c.length; i++) if (D.c[i] / D.c[i - 1] - 1 < -0.002 && D.v[i] > D.v[i - 1]) out.push(D.d[i]); return out;
+};
+
+/* §13 laboratorio: siete señales semanales y cinco reglas */
+E.labSignals = function (X) {
+  const W = X.W, n = W.c.length, m = E.macdFull(W.c), obv = E.obv(W.c, W.v), oe = E.ema(obv, 20), ch = E.chaikin(W.h, W.l, W.c, W.v, 4);
+  const macd = W.c.map((_, k) => k < 35 ? null : (m.m[k] > m.s[k] ? 1 : 0));
+  const ob = W.c.map((_, k) => k < 20 ? null : (obv[k] > oe[k] ? 1 : 0));
+  const ck = W.c.map((_, k) => ch[k] == null ? null : (ch[k] > 0 ? 1 : 0));
+  return [X.wEma, X.wWein, X.wMom, X.wTurt, macd, ob, ck];
+};
+E.lab = function (X) {
+  const sigs = E.labSignals(X), W = X.W, n = W.c.length, nd = X.D.d.length;
+  const vote = W.c.map((_, k) => sigs.every(s => s[k] != null) ? sigs.reduce((a, s) => a + s[k], 0) : null);
+  const novol = X.D.v.slice(-250).filter(x => !x).length > 25;
+  const rules = {
+    'No tocar': W.c.map(() => 1),
+    'Solo EMA50': sigs[0],
+    'Votación 4 de 7': vote.map(v => v == null ? null : v >= 4 ? 1 : 0),
+    'EMA50 + confirmación': W.c.map((_, k) => sigs[0][k] == null || vote[k] == null ? null : sigs[0][k] === 1 ? ((vote[k] - 1) >= 3 ? 1 : 0.5) : 0),
+    'Todas de acuerdo': vote.map(v => v == null ? null : v === 7 ? 1 : 0)
+  };
+  const res = {};
+  for (const [name, w] of Object.entries(rules)) { const ev = E.evaluate(X.D, weeklyToDaily(W, w, nd), X.start); res[name] = { cagr: ev.all.cagr, dd: ev.all.dd, ratio: ev.all.ratio, trades: ev.trades }; }
+  return { res, novol };
+};
+
+/* §14 proyección: V = V × (1 + r_m) + C, r_m = (1+tasa)^(1/12) − 1 */
+E.project = function (V0, C, years, rate) { const rm = Math.pow(1 + rate, 1 / 12) - 1, out = [V0]; let V = V0; for (let m = 1; m <= years * 12; m++) { V = V * (1 + rm) + C; out.push(V); } return out; };
+
+/* conveniencia: analizar un activo completo */
+E.analyze = function (D, ctx) {
+  const X = E.prepare(D), L = E.lenses(X, Object.assign({ lastClose: D.c[D.c.length - 1] }, ctx));
+  return { X, L, C: E.conclude(L, X) };
+};
+E.momentum12 = function (D) { const W = E.weekly(D), k = W.c.length - 1; return k >= 52 ? W.c[k - 4] / W.c[k - 52] - 1 : null; };
+
+if (typeof module !== 'undefined' && module.exports) module.exports = E; else root.Engine = E;
+})(typeof window !== 'undefined' ? window : globalThis);
+</script><script>/* Brújula de Inversión — INTERFAZ. Usa window.Engine (cálculo) y window.TXT (textos). */
+(function () {
+'use strict';
+const E = window.Engine, T = window.TXT, $ = s => document.querySelector(s);
+const num = E.num, pct = E.pct, esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const KEY = 'brujula-v1';
+const st = Object.assign({ region: 'AU', capital: 10000, risk: 0.01, extra: [], theme: null, journal: [], plan: {}, feeASX: 5, feeUS: 0, fxFee: 0.7 }, JSON.parse(localStorage.getItem(KEY) || '{}'));
+const save = () => localStorage.setItem(KEY, JSON.stringify(st));
+const g = (term, shown) => `<span class="g" data-g="${esc(term)}">${esc(shown || term)}</span>`;
+let CORE, FX, SPY, QQQ, CLIM, TV = {}; const DS = {}, AN = {};
+
+/* ---------- carga: fetch y, si se abre con file://, <script> ---------- */
+const pend = {}; window.__B = (k, o) => { if (pend[k]) { pend[k](o); delete pend[k]; } };
+function load(key) {
+  const f = location.protocol === 'file:' ? Promise.reject(0) : fetch('data/' + key).then(r => { if (!r.ok) throw 0; return r.json(); });
+  return f.catch(() => new Promise((res, rej) => {
+    pend[key] = res; const s = document.createElement('script'); s.src = 'data/' + key.replace(/\.json$/, '.js');
+    s.onerror = () => { delete pend[key]; rej(new Error('No se pudo cargar ' + key)); }; document.head.appendChild(s); }));
+}
+const asset = s => CORE.assets.find(a => a.s === s);
+async function getD(s) { if (!DS[s]) DS[s] = E.decode(await load(`t/${s}.json`)); return DS[s]; }
+async function analyze(s) {
+  if (AN[s]) return AN[s];
+  const a = asset(s), D = await getD(s);
+  const twin = { 'IVV.AX': 'SPY', 'NDQ.AX': 'QQQ' }[s];
+  const R = E.analyze(D, { sym: s, kind: a.k, fund: CORE.fund[s] || {}, spyMom: E.momentum12(SPY), twinFund: twin ? CORE.fund[twin] : null });
+  R.a = a; R.D = D; R.usd = a.cur === 'USD'; R.mchg = D.c.at(-1) / D.c[Math.max(0, D.c.length - 22)] - 1;
+  return AN[s] = R;
+}
+const swapSym = s => { const m = CORE.swap, inv = Object.fromEntries(Object.entries(m).map(([a, b]) => [b, a]));
+  return st.region === 'AU' ? (m[s] || s) : (inv[s] || s); };
+const board = () => [...new Set(CORE.board.map(swapSym).concat(st.extra))].filter(asset);
+const cls = s => s === 1 ? 'p' : s === -1 ? 'm' : s === 0 ? 'z' : 'n';
+const ccls = l => l === 'Comprar o mantener' ? 'c-buy' : l === 'Vender o no comprar' ? 'c-sell' : 'c-mid';
+const cur = R => R.usd ? 'US$' : R.a.cur === 'AUD' ? 'A$' : R.a.cur;
+const fxNow = () => FX.c.at(-1);
+
+/* ---------- gráficas (canvas, sin librerías) ---------- */
+function cv(el, h) { const dpr = window.devicePixelRatio || 1, w = el.clientWidth || 600; el.width = w * dpr; el.height = h * dpr; el.style.height = h + 'px'; const x = el.getContext('2d'); x.scale(dpr, dpr); return { x, w, h }; }
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function priceChart(el, R) {
+  const W = R.X.W, n = W.c.length, s0 = Math.max(0, n - 156), { x, w, h } = cv(el, 260), ph = 190, vh = 50;
+  const ema = R.X.ema50, idx = []; for (let k = s0; k < n; k++) idx.push(k);
+  let lo = Infinity, hi = -Infinity, vm = 0; idx.forEach(k => { lo = Math.min(lo, W.l[k], ema[k]); hi = Math.max(hi, W.h[k], ema[k]); vm = Math.max(vm, W.v[k]); });
+  const X = j => 40 + j * (w - 48) / idx.length, Y = p => 8 + (hi - p) / (hi - lo) * (ph - 16), bw = Math.max(1, (w - 48) / idx.length - 1);
+  x.font = '10px IBM Plex Mono, monospace'; x.fillStyle = css('--mute'); x.strokeStyle = css('--line');
+  for (let q = 0; q <= 4; q++) { const p = lo + (hi - lo) * q / 4; x.beginPath(); x.moveTo(40, Y(p)); x.lineTo(w, Y(p)); x.stroke(); x.fillText(p >= 1000 ? p.toFixed(0) : p.toPrecision(4), 0, Y(p) + 3); }
+  idx.forEach((k, j) => { const up = W.c[k] >= W.o[k]; x.fillStyle = up ? css('--greenS') : css('--redS'); const vH = W.v[k] / (vm || 1) * vh; x.fillRect(X(j), h - vH, bw, vH);
+    x.strokeStyle = up ? css('--green') : css('--red'); x.beginPath(); x.moveTo(X(j) + bw / 2, Y(W.h[k])); x.lineTo(X(j) + bw / 2, Y(W.l[k])); x.stroke();
+    x.fillStyle = x.strokeStyle; x.fillRect(X(j), Y(Math.max(W.o[k], W.c[k])), bw, Math.max(1, Math.abs(Y(W.o[k]) - Y(W.c[k])))); });
+  x.strokeStyle = css('--ocre'); x.lineWidth = 2; x.beginPath(); idx.forEach((k, j) => j ? x.lineTo(X(j) + bw / 2, Y(ema[k])) : x.moveTo(X(j), Y(ema[k]))); x.stroke(); x.lineWidth = 1;
+  x.fillStyle = css('--mute'); x.fillText(E.dayStr(W.d[s0]), 40, ph + 12); x.fillText(E.dayStr(W.d[n - 1]), w - 70, ph + 12);
+  x.fillStyle = css('--ocre'); x.fillText('— media de 50 semanas', 46, 18);
+}
+function equityChart(el, D, ev) {
+  const bt = ev.bt, { x, w, h } = cv(el, 180), pts = []; for (let i = bt.start; i < D.d.length; i += 5) pts.push(i); pts.push(D.d.length - 1);
+  let lo = Infinity, hi = -Infinity; pts.forEach(i => { lo = Math.min(lo, bt.eq[i], bt.bh[i]); hi = Math.max(hi, bt.eq[i], bt.bh[i]); });
+  const L = Math.log, X = j => 34 + j * (w - 38) / (pts.length - 1), Y = v => 6 + (L(hi) - L(v)) / (L(hi) - L(lo) || 1) * (h - 22);
+  x.fillStyle = css('--greenS'); pts.forEach((i, j) => { if (bt.pos[i] > 0) x.fillRect(X(j), 6, (w - 38) / (pts.length - 1) + 0.5, h - 22); });
+  const line = (arr, col, wd) => { x.strokeStyle = col; x.lineWidth = wd; x.beginPath(); pts.forEach((i, j) => j ? x.lineTo(X(j), Y(arr[i])) : x.moveTo(X(j), Y(arr[i]))); x.stroke(); };
+  line(bt.bh, css('--mute'), 1.2); line(bt.eq, css('--green'), 2); x.lineWidth = 1;
+  x.font = '10px IBM Plex Mono, monospace'; x.fillStyle = css('--mute');
+  [lo, Math.sqrt(lo * hi), hi].forEach(v => x.fillText('×' + v.toFixed(v < 10 ? 1 : 0), 0, Y(v) + 3));
+  x.fillText(E.dayStr(D.d[bt.start]).slice(0, 4), 34, h - 4); x.fillText(E.dayStr(D.d.at(-1)).slice(0, 4), w - 30, h - 4);
+  x.fillStyle = css('--green'); x.fillText('— regla', 40, 16); x.fillStyle = css('--mute'); x.fillText('— no tocar   (verde suave: semanas dentro · escala logarítmica)', 92, 16);
+}
+function lineChart(el, series, labels, colors) {
+  const { x, w, h } = cv(el, 200), n = series[0].length; let hi = 0; series.forEach(s => s.forEach(v => hi = Math.max(hi, v)));
+  const X = i => 50 + i * (w - 56) / (n - 1), Y = v => 8 + (1 - v / hi) * (h - 26);
+  x.font = '10px IBM Plex Mono, monospace'; x.fillStyle = css('--mute'); x.strokeStyle = css('--line');
+  for (let q = 0; q <= 4; q++) { const v = hi * q / 4; x.beginPath(); x.moveTo(50, Y(v)); x.lineTo(w, Y(v)); x.stroke(); x.fillText(Math.round(v).toLocaleString('es-ES'), 0, Y(v) + 3); }
+  series.forEach((s, k) => { x.strokeStyle = colors[k]; x.lineWidth = 2; x.beginPath(); s.forEach((v, i) => i ? x.lineTo(X(i), Y(v)) : x.moveTo(X(i), Y(v))); x.stroke(); });
+  x.lineWidth = 1; let lx = 54; labels.forEach((l, k) => { x.fillStyle = colors[k]; x.fillText('— ' + l, lx, 18); lx += x.measureText('— ' + l).width + 14; });
+  x.fillStyle = css('--mute'); x.fillText('años →', w - 46, h - 4);
+}
+
+/* ---------- tablero ---------- */
+function lights(L) { return '<span class="lights">' + L.map(l => `<span class="lt ${cls(l.s)}" title="${esc(l.name)}: ${E.sgnTxt(l.s)}">${l.L}</span>`).join('') + '</span>'; }
+function rowHTML(R) {
+  const s = R.a.s;
+  return `<details class="row" data-s="${esc(s)}"><summary><span class="nm">${esc(s)}<small>${esc(R.a.n)}</small></span>
+  <span class="num">${cur(R)} ${num(R.D.c.at(-1))}<br><small class="${R.mchg >= 0 ? 'up' : 'dn'}">${R.mchg >= 0 ? '+' : ''}${pct(R.mchg)} mes</small></span>
+  ${lights(R.L)}<span class="concl ${ccls(R.C.label)}">${R.C.label}</span></summary><div class="det"></div></details>`;
+}
+async function renderBoard() {
+  const el = $('#board'); el.innerHTML = '<p class="progress">Calculando…</p>';
+  const syms = board(), rs = [];
+  for (const s of syms) { try { rs.push(await analyze(s)); } catch (e) { console.warn(e); } }
+  el.innerHTML = rs.map(rowHTML).join('');
+  el.querySelectorAll('details.row').forEach(d => d.addEventListener('toggle', () => { if (d.open && !d.dataset.done) { d.dataset.done = 1; detail(d); } }));
+}
+function evTable(ev) {
+  const r = q => `<td>${pct(q.rule.cagr)}</td><td>${pct(q.hold.cagr)}</td><td>${pct(q.rule.dd)}</td><td>${pct(q.hold.dd)}</td><td>${q.win ? 'gana' : 'no'}</td>`;
+  return `<div class="tbl"><table><tr><th>Periodo</th><th>${g('CAGR')} regla</th><th>no tocar</th><th>${g('peor caída')} regla</th><th>no tocar</th><th></th></tr>
+  ${ev.per.map(q => `<tr><td>${E.dayStr(q.rule.from)} → ${E.dayStr(q.rule.to)}</td>${r(q)}</tr>`).join('')}
+  <tr><td><b>Total</b></td><td>${pct(ev.all.cagr)}</td><td>${pct(ev.hold.cagr)}</td><td>${pct(ev.all.dd)}</td><td>${pct(ev.hold.dd)}</td><td></td></tr></table></div>
+  <p class="small">Resultado: <b>${ev.verdict}</b>. Operaciones: ${ev.trades}; ganadoras: ${pct(ev.winPct, 0)}; tiempo dentro: ${pct(ev.inTime, 0)}. Señal al cierre, compra a la apertura siguiente, 0,15% por cambio.</p>`;
+}
+async function detail(d) {
+  const s = d.dataset.s, R = await analyze(s), box = d.querySelector('.det'), C = R.C, L = R.L, ema = L[0];
+  const vcls = C.label === 'Comprar o mantener' ? '' : C.label === 'Vender o no comprar' ? 's' : 'w';
+  let h = `<div class="box verdict ${vcls}"><div class="mute small">Conclusión</div><div class="big ${ccls(C.label)}">${C.label}</div>
+   ${C.warn ? `<p class="warn">${C.warn}</p>` : ''}<p><b>${C.trigger}</b></p>
+   <p>Confianza: <b>${C.conf}</b>. ${C.why}</p>
+   <p class="small mute">Decide la ${g('media de 50 semanas')}. Votan ${C.n} miradas (sin las que no aplican); hacen falta ${C.need}. A favor: ${C.fav}. En contra: ${C.con}.</p></div>`;
+  h += '<h3>Las ocho miradas</h3>';
+  L.forEach((l, j) => { const t = T.lens[l.id];
+    h += `<div class="lens"><div class="hd"><span class="fam">${l.fam}</span><b>${l.name}</b><span class="tag ${cls(l.s)}">${E.sgnTxt(l.s)}</span>${l.ev ? `<span class="small mute">· prueba: ${l.ev.verdict}</span>` : ''}</div>
+    <div>${esc(l.txt)}</div><details class="how"><summary>Cómo funciona</summary>
+    <p><b>Qué mira.</b> ${t.what}</p><p><b>Por qué podría funcionar.</b> ${t.why}</p><p><b>Cuándo falla.</b> ${t.fails}</p><p class="small"><b>Fuente.</b> ${t.src}</p>
+    <p class="mono small">${t.f}</p>${l.ev ? evTable(l.ev) + `<canvas data-eq="${j}"></canvas>` : ''}</details></div>`; });
+  // plan
+  const P = E.plan(R.X, L, { capital: st.capital, risk: st.risk, fx: fxNow(), usd: R.usd }), c = cur(R);
+  h += `<h3>El plan</h3><div class="box"><p class="small mute">Capital A$ ${num(st.capital, 0)} · riesgo ${pct(st.risk, 1)} por operación (A$ ${num(P.riskA, 0)}). ${R.usd ? `Convertido con AUDUSD ${fxNow().toFixed(4)}.` : ''}</p>`;
+  if (P.above) h += `<p><b>Dentro.</b> Zona de compra: ${c} ${num(P.zoneLo)} – ${num(P.zoneHi)} (cierre − 0,5 × ${g('ATR')} semanal, nunca bajo la media). Salida: la media de 50 semanas, ${c} ${num(P.exit)}. ${g('stop', 'Stop')} que sube: ${c} ${num(P.trail)} (mejor cierre de 22 días − 3 × ATR diario).</p>`;
+  else h += `<p><b>Fuera.</b> Activación: una semana cierra sobre ${c} ${num(P.entry)} (la media). Stop inicial: ${c} ${num(P.exit)} (media − 2 × ATR semanal).</p>`;
+  h += `<p>Tamaño: <b class="num">${num(P.units, P.units < 10 ? 3 : 0)}</b> unidades · costo total <b class="num">A$ ${num(P.costA, 0)}</b> · pérdida si sale mal <b class="num">A$ ${num(P.lossA, 0)}</b>${P.capped ? ' (limitado por el capital)' : ''}.</p>
+   <p>"Paga 3 veces el riesgo": ${c} ${num(P.target)}. No es un objetivo de venta (la regla sale por la media): es la vara para saber si la operación vale la pena. Con 3 a 1 basta acertar una de cada tres: ${g('esperanza matemática')} = 1/3 × 3 − 2/3 × 1 = +0,33 por operación.</p></div>`;
+  // niveles
+  const V = E.levels(R.X), K = V.cava;
+  h += `<h3>Niveles</h3><div class="tbl"><table><tr><th></th><th>Máximo</th><th>toques</th><th>Mínimo</th><th>toques</th><th>posición</th></tr>
+   <tr><td>20 semanas</td><td>${num(V.hi20)}</td><td>${V.tH}</td><td>${num(V.lo20)}</td><td>${V.tL}</td><td>${pct(V.posRange, 0)}</td></tr>
+   <tr><td>52 semanas</td><td>${num(V.hi52)}</td><td></td><td>${num(V.lo52)}</td><td></td><td>${pct(V.gh, 0)} del máx.</td></tr></table></div>
+   <p class="small">George y Hwang (2004): estar cerca del máximo anual juega a favor. Hoy el precio está al ${pct(V.gh, 0)} de su máximo de 52 semanas${V.gh > 0.95 ? ' — muy cerca, a favor.' : '.'}</p>
+   <div class="box interp"><div class="lab">Interpretación, no regla · José Luis Cava</div>
+   <p>Nivel al que el precio volvió más veces en el último año: diario ${num(K.daily.level)} (${K.daily.touches} toques, 1%) y semanal ${num(K.weekly.level)} (${K.weekly.touches} toques, 1,5%).
+   Zona: <b>${num(K.zone[0])}${K.zone[1] !== K.zone[0] ? ' – ' + num(K.zone[1]) : ''}</b>, ${K.isSupport ? g('soporte') : g('resistencia')}. ${K.other ? `${K.other.kind[0].toUpperCase() + K.other.kind.slice(1)}: ${num(K.other.level)}.` : ''}</p>
+   <p class="small">${K.isSupport ? (K.weak ? `Con ${K.total} toques el soporte se debilita: debajo están los stops; si cierra por debajo, la caída puede ser rápida. Una mano fuerte que quiera vender necesita primero un rebote.` : `Soporte con ${K.total} toques.`) : 'Si supera la resistencia, los que apostaban a la baja tienen que comprar. Pero no se compra la ruptura: se compra el retroceso a la zona rota.'}</p></div>`;
+  h += `<h3>Gráfica: 156 semanas</h3><canvas data-price></canvas>`;
+  h += await compare(R);
+  const tv = TV[s]; if (tv) h += `<p class="small mute">Comparación con TradingView (fuente no oficial, con retraso): cierre ${num(tv.tvClose)}, media 50 semanas ${num(tv.tvEma50w)} (TradingView no ajusta por dividendos; aquí sí), diferencia ${pct(tv.dEmaPct / 100, 2)}.</p>`;
+  h += `<h3>Bitácora</h3><div class="box"><p class="small">Antes de actuar, escribe qué harías y por qué. Se guarda en este navegador con la conclusión y el clima de hoy.</p>
+   <div class="search"><select class="jc"><option>Compro</option><option>Mantengo</option><option>Espero</option><option>Vendo</option></select><input class="jw" placeholder="¿Por qué?"><button class="pri jb">Guardar</button></div></div>`;
+  box.innerHTML = h;
+  box.querySelector('[data-price]') && priceChart(box.querySelector('[data-price]'), R);
+  box.querySelectorAll('details.how').forEach(dd => dd.addEventListener('toggle', () => { const c = dd.querySelector('canvas[data-eq]'); if (dd.open && c && !c.dataset.done) { c.dataset.done = 1; equityChart(c, R.D, L[+c.dataset.eq].ev); } }));
+  box.querySelector('.jb').onclick = () => { const why = box.querySelector('.jw').value.trim(); if (!why) return;
+    st.journal.unshift({ t: new Date().toISOString().slice(0, 10), s, c: box.querySelector('.jc').value, why, concl: C.label, conf: C.conf, fg: CLIM ? Math.round(CLIM.value) : null }); save(); box.querySelector('.jw').value = ''; renderJournal(); };
+}
+async function compare(R) {
+  const s = R.a.s; let h = '';
+  const tw = CORE.twins.find(p => p.includes(s));
+  if (tw) { const [us, ax] = tw, U = await getD(us), A = await getD(ax), Ua = E.toAUD(U, FX);
+    h += `<h3>Gemelo: ${us} ↔ ${ax}</h3><div class="tbl"><table><tr><th>Plazo</th><th>${us} en US$</th><th>${us} pasado a A$</th><th>${ax} en A$</th></tr>
+    ${[1, 5, 10].map(y => `<tr><td>${y} año${y > 1 ? 's' : ''}</td><td>${pct(E.retOver(U, y))}</td><td>${pct(E.retOver(Ua, y))}</td><td>${pct(E.retOver(A, y))}</td></tr>`).join('')}</table></div>
+    <p class="small">Son casi lo mismo: la diferencia entre la columna 1 y las otras dos es la moneda (cuando el A$ baja, lo de EE.UU. vale más en A$). "—" = no hay historia suficiente. Comisiones de ejemplo (cámbialas en Ajustes por las de tu bróker): ASX A$ ${num(st.feeASX, 2)} por operación; EE.UU. US$ ${num(st.feeUS, 2)} más ${num(st.fxFee, 2)}% por cambiar moneda.</p>`; }
+  if (s !== 'IVV.AX') {
+    const ivv = await getD('IVV.AX'), mine = R.usd ? E.toAUD(R.D, FX) : { d: R.D.d, c: R.D.c }, v = E.versus(mine, ivv);
+    const row = (lab, q) => q ? `<tr><td>${lab}</td><td>${pct(q.a)}</td><td>${pct(q.b)}</td><td>${pct(q.ddA)}</td><td>${pct(q.ddB)}</td></tr>` : `<tr><td>${lab}</td><td colspan=4>—</td></tr>`;
+    const ref = v[5] || v.all, win = ref.a > ref.b, risk = v.volA > v.volB;
+    h += `<h3>Frente al S&P 500 en A$ (IVV.AX)</h3><div class="tbl"><table><tr><th>Plazo</th><th>${esc(s)}</th><th>IVV.AX</th><th>peor caída</th><th>IVV.AX</th></tr>
+    ${row('1 año', v[1])}${row('3 años', v[3])}${row('5 años', v[5])}${row('Desde ' + E.dayStr(v.all.from).slice(0, 4), v.all)}</table></div>
+    <p class="small">Años calendario en que le ganó: ${v.years.won} de ${v.years.tot}. ${g('volatilidad', 'Volatilidad')} anual (5 años, semanal): ${pct(v.volA, 0)} frente a ${pct(v.volB, 0)}. ${g('correlación', 'Correlación')}: ${num(v.corr, 2)}.</p>
+    <p><b>${win ? 'Le ganó' : 'Perdió frente'} al S&P 500${v[5] ? ' en 5 años' : ''}, con ${risk ? 'más' : 'menos'} riesgo.</b> ${win && risk ? 'Ganar más con más sustos es normal; la pregunta es si aguantarías las caídas.' : win ? 'Mejor rendimiento con menos sustos: poco común.' : risk ? 'Más riesgo y menos rendimiento: el índice fue mejor elección.' : 'Menos rendimiento, pero también menos sustos.'}</p>`; }
+  return h;
+}
+
+/* ---------- ranking ---------- */
+async function renderRanking(loadAll) {
+  const el = $('#rank');
+  if (!loadAll) { el.innerHTML = `<p>Para ordenar todo el universo (${CORE.assets.length} activos) hay que cargar cada uno. <button class="pri" id="rankGo">Calcular ranking</button></p>`; $('#rankGo').onclick = () => renderRanking(true); return; }
+  let i = 0; for (const a of CORE.assets) { el.innerHTML = `<p class="progress">Cargando ${++i} de ${CORE.assets.length}: ${esc(a.s)}…</p>`; try { await analyze(a.s); } catch (e) { console.warn(a.s, e); } }
+  const all = CORE.assets.map(a => AN[a.s]).filter(Boolean), up = all.filter(R => R.L[0].s === 1).sort((a, b) => b.L[2].mom - a.L[2].mom);
+  const fam = up.filter(R => CORE.famous.includes(R.a.s)).slice(0, 10), strong = up.slice(0, 10);
+  const how = R => { const P = E.plan(R.X, R.L, { capital: st.capital, risk: st.risk, fx: fxNow(), usd: R.usd });
+    return R.L[0].dist > 0.15 ? `Por partes (${pct(R.L[0].dist, 0)} sobre la media)` : R.C.label === 'Comprar o mantener' ? `Zona ${num(P.zoneLo)}–${num(P.zoneHi)}` : 'Esperar un retroceso'; };
+  const tbl = rs => `<div class="tbl"><table><tr><th>Activo</th><th>Conclusión</th><th>Confianza</th><th>12 meses</th><th>Cómo comprar</th></tr>${rs.map(R => `<tr><td><b>${esc(R.a.s)}</b> <span class="small mute">${esc(R.a.n.slice(0, 28))}</span></td><td class="${ccls(R.C.label)}">${R.C.label}</td><td>${R.C.conf}</td><td>${pct(R.L[2].mom, 0)}</td><td>${how(R)}</td></tr>`).join('')}</table></div>`;
+  const solid = fam.find(R => R.C.label === 'Comprar o mantener');
+  const core2 = [swapSym('SPY'), swapSym('QQQ')].map(s => AN[s]);
+  el.innerHTML = `<p>Solo entran las que están sobre su media de 50 semanas (${up.length} de ${all.length} hoy). Se ordenan por ${g('impulso')} de 12 meses.</p>
+   ${solid ? `<div class="box verdict"><div class="mute small">La más sólida hoy entre las famosas</div><div class="big">${esc(solid.a.s)} · ${esc(solid.a.n)}</div><p>${solid.C.label}, confianza ${solid.C.conf.toLowerCase()}, 12 meses ${pct(solid.L[2].mom, 0)}.</p></div>` : '<p>Hoy ninguna famosa tiene "Comprar o mantener".</p>'}
+   <h3>Las 10 más famosas</h3>${tbl(fam)}<h3>Las 10 más fuertes del universo</h3>${tbl(strong)}
+   <h3>Núcleo</h3><p>${core2.map(R => `<b>${R.a.s}</b>: ${R.C.label} (${R.L[0].s === 1 ? 'sobre' : 'bajo'} la media, ${pct(R.L[0].dist)})`).join(' · ')}</p>
+   <p class="small"><b>Cuidado:</b> el ranking tiene ${g('sesgo de supervivencia')}: la lista de hoy no incluye las empresas que cayeron y salieron. La cartera sensata es <b>núcleo</b> (70–80% en el índice, con la regla de la media) y <b>satélite</b> (20–30% en el ranking).</p>`;
+  renderFlows();
+}
+
+/* ---------- clima ---------- */
+function renderClimate() {
+  const c = CLIM, el = $('#clima'), names = { mom: ['Impulso', 'S&P ÷ media de 125 días − 1'], str: ['Fuerza', 'sectores cerca de su máximo de 252 días − cerca del mínimo, ÷ 9'], brd: ['Amplitud', 'sectores sobre su media de 50 días ÷ 9'], risk: ['Apetito por riesgo', 'bonos basura (HYG) 20 días − bonos del Tesoro (IEF) 20 días'], vol: ['Volatilidad', '−(VIX ÷ media 50 del VIX − 1)'], safe: ['Refugio', 'S&P 20 días − bonos largos (TLT) 20 días'] };
+  const dS = E.distributionDays(SPY), dQ = E.distributionDays(QQQ);
+  el.innerHTML = `<div class="box"><div class="mute small">Termómetro de hoy (réplica del índice de CNN, 6 de 7 componentes)</div>
+   <div class="big serif" style="font-size:2rem">${c.value.toFixed(0)} · ${c.zone}</div><div class="therm"><span class="pin" style="left:calc(${c.value}% - 2px)"></span></div>
+   <div class="small mute" style="display:flex;justify-content:space-between"><span>Miedo extremo</span><span>Miedo</span><span>Neutral</span><span>Codicia</span><span>Codicia extrema</span></div></div>
+   <div class="grid2">${Object.entries(c.now).map(([k, v]) => `<div class="card"><b>${names[k][0]}</b> <span class="num">${v.p.toFixed(0)}</span><div class="meter"><i style="width:${v.p}%"></i></div><div class="small mute">${names[k][1]}. Percentil de los últimos 756 días.</div></div>`).join('')}</div>
+   <h3>Qué hizo el S&P 500 después de cada nivel</h3><p class="small mute">Desde ${E.dayStr(c.from)} (SPY con dividendos). Cada día cuenta una vez.</p>
+   <div class="tbl"><table><tr><th>Nivel</th><th>días</th><th>3 meses: mediana</th><th>% positivo</th><th>1 año: mediana</th><th>% positivo</th></tr>
+   ${c.table.map(r => `<tr><td>${r.z}</td><td>${r.n3}</td><td>${pct(r.m3)}</td><td>${pct(r.p3, 0)}</td><td>${pct(r.m12)}</td><td>${pct(r.p12, 0)}</td></tr>`).join('')}</table></div>
+   <h3>Días de distribución (O'Neil)</h3><p>Caídas de más de 0,2% con más volumen que el día anterior, últimas 25 sesiones: <b>S&P 500 (SPY): ${dS.length}</b> · <b>Nasdaq-100 (QQQ): ${dQ.length}</b>. ${Math.max(dS.length, dQ.length) >= 5 ? 'Cinco o más: los grandes están vendiendo, cuidado.' : 'Pocos: sin presión vendedora fuerte.'}</p>
+   <div id="flows"></div>`;
+  renderFlows();
+}
+function renderFlows() {
+  const el = $('#flows'); if (!el) return; const rows = [];
+  'XLK XLF XLE XLV XLY XLP XLI XLB XLU'.split(' ').forEach(s => { const a = CORE.aux[s]; if (a) { const D = E.decode(a); rows.push([s + ' (sector)', D.c.at(-1) / D.c[D.c.length - 64] - 1]); } });
+  Object.keys(DS).forEach(s => { const D = DS[s]; if (D.c.length > 64) rows.push([s, D.c.at(-1) / D.c[D.c.length - 64] - 1]); });
+  rows.sort((a, b) => b[1] - a[1]);
+  const t = rs => rs.map(r => `<tr><td>${esc(r[0])}</td><td class="${r[1] >= 0 ? 'up' : 'dn'}">${pct(r[1])}</td></tr>`).join('');
+  el.innerHTML = `<h3>Flujos: rendimiento a 3 meses</h3><p class="small mute">${rows.length} activos y sectores cargados${Object.keys(DS).length < CORE.assets.length ? ' (calcula el ranking para incluir todo el universo)' : ''}.</p><div class="grid2"><div><b>Los 6 mejores</b><table>${t(rows.slice(0, 6))}</table></div><div><b>Los 5 peores</b><table>${t(rows.slice(-5).reverse())}</table></div></div>`;
+}
+
+/* ---------- laboratorio ---------- */
+async function renderLab() {
+  const el = $('#lab'), syms = board(), res = {};
+  for (const s of syms) res[s] = E.lab(E.prepare(await getD(s))).res;
+  const names = Object.keys(res[syms[0]]), med = a => { a = a.filter(x => x != null && isFinite(x)).sort((x, y) => x - y); const m = a.length >> 1; return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2; };
+  const best = {}; syms.forEach(s => { const b = names.reduce((x, y) => (res[s][y].ratio || -9) > (res[s][x].ratio || -9) ? y : x); best[b] = (best[b] || 0) + 1; });
+  const M = n => ({ c: med(syms.map(s => res[s][n].cagr)), d: med(syms.map(s => res[s][n].dd)), r: med(syms.map(s => res[s][n].ratio)) });
+  const fair = {}; for (const s of ['SPY', 'QQQ']) fair[s] = E.lab(E.prepare(await getD(s))).res;
+  const simple = M('Solo EMA50').r, vote = M('Votación 4 de 7').r;
+  el.innerHTML = `<p>Siete señales semanales (media de 50, Weinstein, impulso, Tortugas, MACD semanal, OBV sobre su media de 20, Chaikin de 4 semanas) y cinco maneras de combinarlas, probadas en los ${syms.length} activos del tablero.</p>
+   <div class="tbl"><table><tr><th>Regla</th><th>CAGR (mediana)</th><th>Peor caída (mediana)</th><th>Ganancia ÷ caída</th><th>Mejor en</th></tr>
+   ${names.map(n => { const m = M(n); return `<tr><td>${n}</td><td>${pct(m.c)}</td><td>${pct(m.d)}</td><td>${num(m.r, 2)}</td><td>${best[n] || 0} de ${syms.length}</td></tr>`; }).join('')}</table></div>
+   <p class="small mute">"Mejor en" = activos donde esa regla tuvo la mejor relación ganancia ÷ caída. "EMA50 + confirmación": todo dentro si además ≥ 3 señales a favor; mitad si solo la media.</p>
+   <p><b>${simple >= vote ? 'Una regla simple gana a la votación' : 'Hoy la votación gana a la regla simple'}</b> (ganancia ÷ caída ${num(simple, 2)} frente a ${num(vote, 2)}). ${simple >= vote ? 'La razón: cuatro de las siete lentes miden la misma idea (la tendencia). Votar no suma opiniones distintas; repite la misma con ruido y llega más tarde.' : `Con estos activos la votación quedó por delante (${num(vote - simple, 2)} de diferencia). Lo esperado es lo contrario, porque cuatro de las siete lentes miden la misma idea (la tendencia): votar repite la misma opinión con ruido. Probar antes de creer: aquí la historia no lo confirmó del todo.`}</p>
+   <h3>La prueba justa: los índices</h3><div class="tbl"><table><tr><th></th><th>No tocar: CAGR</th><th>peor caída</th><th>Media 50: CAGR</th><th>peor caída</th></tr>
+   ${['SPY', 'QQQ'].map(s => `<tr><td>${s}</td><td>${pct(fair[s]['No tocar'].cagr)}</td><td>${pct(fair[s]['No tocar'].dd)}</td><td>${pct(fair[s]['Solo EMA50'].cagr)}</td><td>${pct(fair[s]['Solo EMA50'].dd)}</td></tr>`).join('')}</table></div>
+   <p>En los índices la media ${fair.SPY['Solo EMA50'].cagr < fair.SPY['No tocar'].cagr ? 'gana menos que no tocar' : 'gana más que no tocar'}, pero la peor caída pasa de ${pct(fair.SPY['No tocar'].dd, 0)} a ${pct(fair.SPY['Solo EMA50'].dd, 0)} en el S&P 500 y de ${pct(fair.QQQ['No tocar'].dd, 0)} a ${pct(fair.QQQ['Solo EMA50'].dd, 0)} en el Nasdaq-100: casi a la mitad. Se paga rendimiento a cambio de poder dormir.</p>`;
+}
+
+/* ---------- empieza aquí ---------- */
+function renderStart() {
+  const p = Object.assign({ inc: 6000, fix: 2500, varr: 1500, debt: 0, months: 6, goals: '', pres: 80, monthly: 500, sym: swapSym('SPY'), init: 1000, mon: 200, yrs: 20, rate: null, infl: 3, show: false }, st.plan);
+  const el = $('#start'), inp = (k, lab, extra = '') => `<label>${lab}<input type="number" data-k="${k}" value="${p[k] ?? ''}" ${extra}></label>`;
+  const sav = p.inc - p.fix - p.varr, rate = sav / (p.inc || 1), need = (p.fix + p.varr) * p.months;
+  el.innerHTML = `<div class="steps">
+   <div class="box"><h3>1. Lo que entra y lo que sale</h3>${inp('inc', 'Ingresos al mes (A$)')}${inp('fix', 'Gastos fijos')}${inp('varr', 'Gastos variables')}
+    <p>Ahorro: <b class="num">A$ ${num(sav, 0)}</b> al mes (${pct(rate, 0)}). ${rate < 0 ? 'Gastas más de lo que entra: primero hay que arreglar esto.' : rate < 0.1 ? 'Menos del 10%: busca qué gasto recortar.' : rate < 0.2 ? 'Bien: entre 10% y 20%.' : 'Muy bien: más del 20%.'}</p>
+    ${inp('debt', 'Deudas de consumo (tarjeta, auto, plazos; la hipoteca no cuenta)')}
+    ${p.debt > 0 ? `<p class="warn">Primero esto: con tu ahorro se liquidan en ${sav > 0 ? Math.ceil(p.debt / sav) + ' meses' : '— (no hay ahorro)'}. Una tarjeta cobra más de lo que suele dar la bolsa.</p>` : ''}</div>
+   <div class="box"><h3>2. El ${g('colchón')}</h3><label>Meses de gastos<select data-k="months">${[3, 6, 12].map(m => `<option ${m == p.months ? 'selected' : ''}>${m}</option>`).join('')}</select></label>${inp('have', 'Ya tengo ahorrado (A$)')}
+    <p>Necesitas <b class="num">A$ ${num(need, 0)}</b>. Falta: A$ ${num(Math.max(0, need - (p.have || 0)), 0)}${sav > 0 ? `, unos ${Math.ceil(Math.max(0, need - (p.have || 0)) / sav)} meses` : ''}.</p></div>
+   <div class="box"><h3>3. Nombre y plazo a cada peso</h3><p>Corto (1–2 años): no va a bolsa. Medio (5–7 años): con cuidado. Largo (10+ años): es para esto.</p><label>Mis metas<input data-k="goals" value="${esc(p.goals || '')}" placeholder="p. ej. auto 2 años; casa 7; jubilación 30" style="flex:1"></label></div>
+   <div class="box"><h3>4. Un sistema que te deje dormir</h3>${inp('pres', 'Capital de preservación (% en índice, sin tocar)')}
+    <p>De A$ ${num(st.capital, 0)}: <b>A$ ${num(st.capital * p.pres / 100, 0)}</b> de preservación (índice, regla de la media) y <b>A$ ${num(st.capital * (100 - p.pres) / 100, 0)}</b> operativo (ranking, con la regla del 1%). ${g('diversificar', 'Diversifica')} y mira las comisiones.</p>${inp('monthly', 'Cuánto invertir al mes (A$)')}${p.monthly > sav && sav > 0 ? '<p class="warn">Es más que tu ahorro mensual.</p>' : ''}</div>
+   <div class="box"><h3>5. Automatizar y no mirar</h3><p>Programa una compra automática cada mes, el día después de cobrar. Revisa la página una vez a la semana, el fin de semana: la regla decide con el cierre del viernes.</p></div>
+   <div class="box" id="proj"></div></div>`;
+  el.querySelectorAll('[data-k]').forEach(i => i.onchange = () => { st.plan = Object.assign(p, { [i.dataset.k]: i.type === 'number' || i.tagName === 'SELECT' ? +i.value : i.value }); save(); renderStart(); });
+  renderProjection(p);
+}
+async function renderProjection(p) {
+  const el = $('#proj'); if (!asset(p.sym)) p.sym = swapSym('SPY');
+  const R = await analyze(p.sym), hist = Math.pow(R.D.c.at(-1) / R.D.c[0], 365.25 / (R.D.d.at(-1) - R.D.d[0])) - 1, ruleC = R.L[0].ev.all.cagr;
+  const rate = p.rate == null || p.rateSym !== p.sym ? hist : p.rate, dd = E.maxDD(R.D.c);
+  const paths = [['Solo ahorrar (0%)', 0], [`Sin tocar (${pct(rate)})`, rate], [`Con la regla de la media (${pct(ruleC)})`, ruleC], [`A mitad de ritmo (${pct(rate / 2)})`, rate / 2]];
+  const blocked = p.debt > 0 && !p.show;
+  let h = `<h3>Proyección</h3><datalist id="dl">${CORE.assets.map(a => `<option value="${esc(a.s)}">${esc(a.n)}</option>`).join('')}</datalist>
+   <label>Activo <input list="dl" id="pSym" value="${esc(p.sym)}"></label>
+   <label>Aporte inicial (A$)<input type="number" id="pI" value="${p.init}"></label><label>Aporte mensual<input type="number" id="pM" value="${p.mon}"></label>
+   <label>Años<select id="pY">${[10, 20, 30].map(y => `<option ${y == p.yrs ? 'selected' : ''}>${y}</option>`).join('')}</select></label>
+   <label>Tasa anual (prefijada con el ${g('CAGR')} histórico real de ${esc(p.sym)} desde ${E.dayStr(R.D.d[0]).slice(0, 4)})<input type="number" step="0.1" id="pR" value="${(rate * 100).toFixed(1)}"></label>
+   <label>${g('inflación', 'Inflación')} anual (%)<input type="number" step="0.1" id="pF" value="${p.infl}"></label>`;
+  if (blocked) h += `<p class="warn">Primero las deudas de consumo. La proyección queda bloqueada hasta que estén en cero.</p><button id="pShow">Ver de todos modos</button>`;
+  else {
+    const S = paths.map(([, r]) => E.project(p.init, p.mon, p.yrs, r)), yrs = [5, 10, 15, 20, 30].filter(y => y <= p.yrs);
+    const ann = S.map(s => s.filter((_, i) => i % 12 === 0));
+    h += `<canvas id="pC"></canvas><div class="tbl"><table><tr><th>Camino</th>${yrs.map(y => `<th>${y} años</th>`).join('')}<th>en dinero de hoy</th></tr>
+     ${paths.map(([n], k) => `<tr><td>${n}</td>${yrs.map(y => `<td>${num(S[k][y * 12], 0)}</td>`).join('')}<td>${num(S[k].at(-1) / Math.pow(1 + p.infl / 100, p.yrs), 0)}</td></tr>`).join('')}</table></div>
+     <p class="small">Fórmula mensual: V = V × (1 + r_m) + C, r_m = (1 + tasa)^(1/12) − 1. Aportado en total: A$ ${num(p.init + p.mon * 12 * p.yrs, 0)}.</p>
+     <p class="warn">Aviso: la peor caída histórica de ${esc(p.sym)} fue ${pct(dd, 0)}. Sobre la cifra final "sin tocar" serían A$ ${num(S[1].at(-1) * -dd, 0)} menos en el peor momento.</p>`;
+    setTimeout(() => lineChart($('#pC'), ann, paths.map(x => x[0].split(' (')[0]), [css('--mute'), css('--green'), css('--ocre'), css('--red')]), 0);
+  }
+  el.innerHTML = h;
+  const upd = () => { st.plan = Object.assign(p, { sym: $('#pSym').value.trim().toUpperCase(), init: +$('#pI').value, mon: +$('#pM').value, yrs: +$('#pY').value, infl: +$('#pF').value }); save(); renderProjection(p); };
+  ['#pSym', '#pI', '#pM', '#pY', '#pF'].forEach(s => $(s).onchange = upd);
+  $('#pR').onchange = () => { p.rate = +$('#pR').value / 100; p.rateSym = p.sym; st.plan = p; save(); renderProjection(p); };
+  if ($('#pShow')) $('#pShow').onclick = () => { p.show = true; renderProjection(p); };
+}
+
+/* ---------- campeones ---------- */
+async function renderChamps() {
+  const S = await analyze('SPY'), X = S.X, k = X.W.c.length - 1, up = X.wEma[k] === 1; let wks = 0; for (let j = k; j >= 0 && X.wEma[j] === X.wEma[k]; j--) wks++;
+  const i = SPY.c.length - 1, d200 = SPY.c[i] / X.sma200[i] - 1;
+  const gold = swapSym('GLD'), GD = await getD(gold), rsiW = E.rsi(E.weekly(GD).c, 14).at(-1);
+  const idx = swapSym('SPY'), IR = await analyze(idx), IP = E.plan(IR.X, IR.L, { capital: st.capital, risk: st.risk, fx: fxNow(), usd: IR.usd });
+  const r = S.L[0].ev.hold.cagr, C0 = st.capital, bog = C0 * (Math.pow(1 + r, 20) - Math.pow(1 + r - 0.01, 20));
+  let peak = 0, pi = 0, worst = 0, wi = 0, wpi = 0; SPY.c.forEach((c, j) => { if (c > peak) { peak = c; pi = j; } if (c / peak - 1 < worst) { worst = c / peak - 1; wi = j; wpi = pi; } });
+  let rec = SPY.c.findIndex((c, j) => j > wi && c >= SPY.c[wpi]); const recY = rec > 0 ? (SPY.d[rec] - SPY.d[wpi]) / 365.25 : null;
+  const pres = (st.plan.pres ?? 80), dS = E.distributionDays(SPY).length;
+  const cards = [
+    ['Warren Buffett', 'Ten miedo cuando otros son codiciosos, y sé codicioso cuando otros tienen miedo.', 'Compra negocios, no papeles. El ánimo del mercado le da ofertas en las crisis.', `Termómetro de hoy: ${CLIM.value.toFixed(0)} (${CLIM.zone}).`],
+    ['Paul Tudor Jones', 'Nada bueno pasa bajo la media de 200 días.', 'Usa una sola regla para defenderse: si el precio está bajo su media de 200 días, se sale.', `S&P 500 (SPY) a ${pct(d200)} de su media de 200 días.`],
+    ['Jesse Livermore', 'El dinero se gana esperando, no operando.', 'Esperaba a que la tendencia estuviera clara y luego se quedaba sentado.', `El S&P 500 lleva ${wks} semana${wks > 1 ? 's' : ''} seguidas ${up ? 'sobre' : 'bajo'} su media de 50 semanas.`],
+    ['Ed Seykota', 'Corta las pérdidas, deja correr las ganancias.', 'Pionero de los sistemas de tendencia. Decide la pérdida máxima antes de entrar.', `Pérdida máxima por operación con tu capital: A$ ${num(st.capital * st.risk, 0)} (${pct(st.risk, 1)} de A$ ${num(st.capital, 0)}).`],
+    ['Richard Dennis y las Tortugas', 'Cualquiera puede aprender a operar con reglas.', 'Enseñó a novatos un sistema de rupturas con tamaño por riesgo. Muchos ganaron millones.', `Tamaño sugerido para ${idx}: ${num(IP.units, IP.units < 10 ? 2 : 0)} unidades (A$ ${num(IP.costA, 0)}).`],
+    ['José Luis Cava', 'Compra el oro cuando nadie lo quiere.', 'Primera condición de compra fuerte: RSI semanal de 14 del oro bajo 40. La segunda, el pánico en la prensa, la juzgas tú.', `RSI semanal (14) de ${gold}: ${num(rsiW, 0)} ${rsiW < 40 ? '— bajo 40: se cumple la primera condición.' : '— sobre 40: todavía no.'}`],
+    ['Juan Pa Mujica (y Hyenuk Chu)', 'Separa el capital que cuidas del capital con que operas.', 'Chu añade: varias cuentas, la más agresiva la más pequeña, y cero deudas de consumo antes de cualquiera.', `Con tu plan: A$ ${num(st.capital * pres / 100, 0)} de preservación y A$ ${num(st.capital * (100 - pres) / 100, 0)} operativo.${st.plan.debt > 0 ? ' Tienes deudas de consumo: primero eso.' : ''}`],
+    ['Jack Bogle', 'No busques la aguja: compra el pajar.', 'Creó el fondo índice. Las comisiones son lo único seguro del rendimiento.', `1% extra de comisión durante 20 años sobre A$ ${num(C0, 0)} (al ${pct(r)} anual): A$ ${num(bog, 0)} menos.`],
+    ['Morgan Housel', 'Lo más importante es quedarse en el juego.', 'El interés compuesto solo funciona si no te sales en la peor caída.', `La peor caída del S&P 500 (SPY) desde 2004: ${pct(worst, 0)} (${E.dayStr(SPY.d[wi])}). Tardó ${recY ? num(recY, 1) + ' años' : '—'} en recuperarse.`],
+    ["William O'Neil", 'Tres de cada cuatro acciones siguen al mercado.', 'Contaba los días de distribución: caídas con más volumen. Cinco o más en un mes avisan de techo.', `Días de distribución del S&P 500 hoy: ${dS} en 25 sesiones.`]
+  ];
+  $('#champs').innerHTML = `<div class="grid2">${cards.map(c => `<div class="card"><h3>${c[0]}</h3><p><i>${c[1]}</i></p><p class="small">${c[2]}</p><div class="live">${c[3]}</div></div>`).join('')}</div>`;
+}
+
+/* ---------- enseñanza, bitácora ---------- */
+function renderTeach() {
+  $('#schools').innerHTML = T.schools.map(s => `<div class="lens"><b>${s[0]}</b><p>${s[1]}</p><p class="small mute">En la app: ${s[2]}</p></div>`).join('');
+  $('#lessons').innerHTML = T.lessons.map((l, j) => `<details class="lens"><summary><b>${j + 1}. ${l[0]}</b></summary><p>${l[1]}</p></details>`).join('');
+  $('#okbad').innerHTML = `<div class="card"><h3 class="up">Está bien</h3><ul>${T.ok.map(x => `<li>${x}</li>`).join('')}</ul></div><div class="card"><h3 class="dn">Está mal</h3><ul>${T.bad.map(x => `<li>${x}</li>`).join('')}</ul></div>`;
+}
+function renderJournal() {
+  $('#journal').innerHTML = st.journal.length ? `<div class="tbl"><table><tr><th>Fecha</th><th>Activo</th><th>Decisión</th><th>Por qué</th><th>Conclusión</th><th>Clima</th></tr>${st.journal.map(j => `<tr><td>${j.t}</td><td>${esc(j.s)}</td><td>${esc(j.c)}</td><td style="text-align:left;font-family:var(--sans)">${esc(j.why)}</td><td>${esc(j.concl)} (${esc(j.conf)})</td><td>${j.fg ?? '—'}</td></tr>`).join('')}</table></div>` : '<p class="mute">Todavía no hay entradas. Abre un activo del tablero y escribe tu decisión.</p>';
+}
+
+/* ---------- glosario: ventanita ---------- */
+function tips() {
+  const tip = $('#tip');
+  document.addEventListener('click', e => { const t = e.target.closest('.g'); if (!t) { tip.style.display = 'none'; return; }
+    const k = t.dataset.g, def = T.gloss[k] || T.gloss[Object.keys(T.gloss).find(x => x.toLowerCase() === k.toLowerCase())]; if (!def) return;
+    tip.innerHTML = `<b>${esc(k)}</b><br>${esc(def)}`; tip.style.display = 'block'; const r = t.getBoundingClientRect();
+    tip.style.left = Math.min(window.innerWidth - 310, Math.max(6, r.left)) + 'px'; tip.style.top = (r.bottom + 6) + 'px'; e.stopPropagation(); });
+  window.addEventListener('scroll', () => tip.style.display = 'none', { passive: true });
+}
+
+/* ---------- arranque ---------- */
+function settings() {
+  const th = st.theme || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'); document.documentElement.dataset.theme = th;
+  $('#region').value = st.region; $('#capital').value = st.capital; $('#risk').value = st.risk; $('#feeASX').value = st.feeASX; $('#feeUS').value = st.feeUS; $('#fxFee').value = st.fxFee;
+  $('#theme').onclick = () => { st.theme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; document.documentElement.dataset.theme = st.theme; save(); renderBoard(); };
+  const re = () => { st.region = $('#region').value; st.capital = +$('#capital').value || 10000; st.risk = +$('#risk').value; st.feeASX = +$('#feeASX').value; st.feeUS = +$('#feeUS').value; st.fxFee = +$('#fxFee').value; save(); renderAll(); };
+  ['#region', '#capital', '#risk', '#feeASX', '#feeUS', '#fxFee'].forEach(s => $(s).onchange = re);
+  $('#addList').innerHTML = CORE.assets.map(a => `<option value="${esc(a.s)}">${esc(a.n)}</option>`).join('');
+  $('#addBtn').onclick = () => { const s = $('#addIn').value.trim().toUpperCase(); if (asset(s) && !board().includes(s)) { st.extra.push(s); save(); renderBoard(); } $('#addIn').value = ''; };
+  $('#clearBtn').onclick = () => { st.extra = []; save(); renderBoard(); };
+}
+async function renderAll() { await renderBoard(); renderStart(); await renderChamps(); renderJournal(); await renderLab(); renderFlows(); }
+async function main() {
+  try { CORE = await load('core.json'); } catch (e) { $('#board').innerHTML = '<p class="warn">No se encontraron los datos (data/core.json). Ejecuta primero fetch_data.py.</p>'; return; }
+  try { const tv = await load('tv.json'); tv.rows.forEach(r => TV[r.s] = r); } catch (e) { /* opcional */ }
+  FX = E.decode(CORE.aux['AUDUSD=X']);
+  $('#asof').textContent = `Datos al cierre del ${E.dayStr(CORE.lastDay)} · ${CORE.assets.length} activos · generado ${CORE.generated.replace('T', ' ').slice(0, 16)} UTC`;
+  settings(); tips(); renderTeach();
+  SPY = await getD('SPY'); QQQ = await getD('QQQ');
+  const ax = s => E.decode(CORE.aux[s]);
+  CLIM = E.climate(SPY, 'XLK XLF XLE XLV XLY XLP XLI XLB XLU'.split(' ').map(ax), ax('HYG'), ax('IEF'), ax('^VIX'), ax('TLT'));
+  renderClimate(); renderRanking(false); await renderAll();
+  // enlaces directos: #open=SPY abre un activo; #rank calcula el ranking; #s-... baja a la sección
+  const hs = decodeURIComponent(location.hash.slice(1)), mo = hs.match(/open=([^&]+)/);
+  if (/rank/.test(hs)) await renderRanking(true);
+  if (mo && asset(mo[1]) && !document.querySelector(`details.row[data-s="${mo[1]}"]`)) { const R = await analyze(mo[1]); $('#board').insertAdjacentHTML('afterbegin', rowHTML(R)); const d0 = $('#board details.row'); d0.addEventListener('toggle', () => { if (d0.open && !d0.dataset.done) { d0.dataset.done = 1; detail(d0); } }); }
+  if (mo) { const d = document.querySelector(`details.row[data-s="${mo[1]}"]`); if (d) { d.open = true; await detail(d); d.dataset.done = 1; const how = d.querySelector('details.how'); if (how) how.open = true; d.scrollIntoView(); } }
+  const sec = hs.match(/(s-[a-z]+)/); if (sec && $('#' + sec[1])) $('#' + sec[1]).scrollIntoView();
+  document.body.dataset.ready = '1';
+}
+window.Brujula = { st, AN, analyze, renderRanking };
+main();
+})();
+</script></body></html>

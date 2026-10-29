@@ -1,0 +1,30 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Brújula de Inversión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>/*CSS*/</style></head><body><div class="wrap">
+<header><div class="mute small" id="asof">Cargando datos…</div><h1>Brújula de Inversión</h1><p class="lema">Ocho miradas. Una conclusión. Y la decisión final, tuya.</p>
+<div class="bar"><label>Invierto en <select id="region"><option value="AU">Australia</option><option value="US">EE.UU.</option></select></label>
+<label>Capital A$ <input type="number" id="capital" min="100" step="100"></label>
+<label>Riesgo <select id="risk"><option value="0.005">0,5%</option><option value="0.01">1%</option><option value="0.02">2%</option></select></label>
+<button id="theme" title="Tema claro u oscuro">◐ Tema</button></div>
+<details class="small"><summary class="mute">Ajustes: comisiones de ejemplo</summary><div class="bar"><label>ASX A$/operación <input type="number" id="feeASX" step="0.5"></label><label>EE.UU. US$/operación <input type="number" id="feeUS" step="0.5"></label><label>Cambio de moneda % <input type="number" id="fxFee" step="0.1"></label></div></details>
+<nav><a href="#s-board">Tablero</a><a href="#s-rank">¿Cuál comprar?</a><a href="#s-clima">El clima</a><a href="#s-lab">Laboratorio</a><a href="#s-start">Empieza aquí</a><a href="#s-champs">Campeones</a><a href="#s-teach">Aprende</a><a href="#s-journal">Bitácora</a><a href="#s-limits">Límites</a></nav></header>
+<section id="s-board"><h2>El tablero</h2><p class="small mute">Toca una fila para ver las ocho miradas, el plan, los niveles y la gráfica. Luces: <b>T T</b> tendencia · <b>I I</b> impulso · <b>C C</b> corto plazo · <b>V</b> volumen · <b>F</b> fundamentos. Verde a favor, ocre duda, vino en contra, gris no aplica.</p>
+<div class="search"><input id="addIn" list="addList" placeholder="Añadir un activo del universo (p. ej. NFLX, BHP.AX)"><datalist id="addList"></datalist><button id="addBtn">Añadir</button><button id="clearBtn" title="Quitar los añadidos">Quitar añadidos</button></div><div id="board"></div></section>
+<section id="s-rank"><h2>¿Cuál comprar?</h2><div id="rank"></div></section>
+<section id="s-clima"><h2>El clima: miedo y codicia</h2><div id="clima"></div></section>
+<section id="s-lab"><h2>¿Cuántas fórmulas deben coincidir?</h2><div id="lab"><p class="progress">Calculando…</p></div></section>
+<section id="s-start"><h2>Empieza aquí</h2><div id="start"></div></section>
+<section id="s-champs"><h2>Los trucos de los campeones</h2><div id="champs"></div></section>
+<section id="s-teach"><h2>Aprende</h2><h3>Las escuelas</h3><div id="schools"></div><h3>Doce lecciones cortas</h3><div id="lessons"></div><h3>Está bien / está mal</h3><div class="okbad" id="okbad"></div></section>
+<section id="s-journal"><h2>Bitácora</h2><div id="journal"></div></section>
+<section id="s-limits"><h2>Límites</h2><ul>
+<li><b>No es en vivo.</b> Usa precios de cierre diarios (Yahoo Finance) y se actualiza una vez al día.</li>
+<li><b>Sesgo de supervivencia.</b> El universo es la lista de hoy: las empresas que cayeron ya no están.</li>
+<li><b>La conclusión es una regla, no una garantía.</b> Que haya funcionado desde 2004 no asegura que funcione mañana.</li>
+<li><b>Impuestos.</b> En Australia, vender antes de 12 meses pierde el descuento del 50% sobre la ganancia de capital.</li>
+<li><b>Datos.</b> Precios ajustados por dividendos y splits (adjclose ÷ close). TradingView solo se usa como comparación (fuente no oficial).</li>
+<li><b>Para aprender.</b> Uso familiar y educativo. No es asesoría financiera.</li></ul></section>
+</div><div id="tip"></div>
+<script>/*CONTENT*/</script><script>/*ENGINE*/</script><script>/*APP*/</script></body></html>
