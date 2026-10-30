@@ -373,11 +373,24 @@ const TW = { list: [], seen: null, meta: null, accounts: null, unread: 0, timer:
 const TW_POLL_MS = 5 * 60 * 1000;   // cada 5 minutos
 const xUrl = u => /^https:\/\/(x|twitter)\.com\//.test(u) ? u : 'https://x.com/';
 function ago(ts) { const m = Math.round((Date.now() - ts) / 6e4); return m < 1 ? 'ahora' : m < 60 ? `hace ${m} min` : m < 1440 ? `hace ${Math.round(m / 60)} h` : `hace ${Math.round(m / 1440)} d`; }
+/* indicador "Activa": edad de tweets.json y próxima actualización (~7:30 y ~18:30, hora de Sídney) */
+function renderLive(gen) {
+  const el = $('#liveDot'), t = Date.parse(gen); if (!el || !isFinite(t)) { if (el) el.hidden = true; return; }
+  const tz = { timeZone: 'Australia/Sydney' }, d = new Date(t), now = new Date();
+  const hm = x => new Intl.DateTimeFormat('es-ES', Object.assign({ hour: 'numeric', minute: '2-digit', hour12: false }, tz)).format(x).replace(/^0(\d)/, '$1');
+  const day = x => new Intl.DateTimeFormat('es-ES', Object.assign({ day: '2-digit', month: '2-digit' }, tz)).format(x);
+  const p = new Intl.DateTimeFormat('en-GB', Object.assign({ hour: '2-digit', minute: '2-digit', hour12: false }, tz)).formatToParts(now);
+  const m = +p.find(q => q.type === 'hour').value % 24 * 60 + +p.find(q => q.type === 'minute').value;
+  const next = m >= 450 && m < 1110 ? '18:30' : '7:30', late = now - t > 14 * 3600e3;
+  el.className = late ? 'late' : ''; el.hidden = false;
+  el.innerHTML = `<span class="ld">●</span> ${late ? 'Atrasada' : 'Activa'} · <span class="lw">actualizada </span>${day(d) === day(now) ? '' : day(d) + ' '}${hm(d)} · <span class="lw">próxima </span>~${next}`;
+}
 async function loadTweets(bust) {
   const old = BUST; BUST = bust ? '?v=' + Date.now() : BUST; let doc;
   try { doc = await load('tweets.json'); } catch (e) { doc = null; } finally { BUST = old; }
   if (!TW.accounts) { try { TW.accounts = await load('x_accounts.json'); } catch (e) { TW.accounts = false; } }
   if (!doc) { $('#twMeta').textContent = 'Todavía no hay tweets publicados (data/tweets.json).'; return; }
+  renderLive(doc.generated_at);
   const P = E.prepareTweets(doc, { now: Date.parse(doc.generated_at) || Date.now(), days: doc.window_days || 7, cap: 500 });
   if (!P.ok) { $('#twMeta').textContent = 'Archivo de tweets no válido: ' + P.errors.join('; '); return; }
   const fresh = TW.seen ? new Set(E.newTweetIds(TW.seen, P.tweets)) : new Set();
