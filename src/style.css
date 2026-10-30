@@ -91,5 +91,8 @@ canvas{width:100%;display:block;margin:6px 0}
 #refreshDock>*{pointer-events:auto}
 #refreshDock #refresh{box-shadow:0 3px 12px #0003;padding:6px 12px}
 #refreshStamp{font:.7rem/1.3 var(--mono);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:2px 6px;color:var(--mute);box-shadow:0 2px 8px #0002;text-align:right;max-width:13em}
+#liveDot{position:absolute;right:0;top:calc(100% + 3px);font:.65rem/1.3 var(--mono);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:1px 6px;color:var(--mute);box-shadow:0 2px 8px #0002;white-space:nowrap;cursor:help}
+#liveDot .ld{color:#2e9d4f}#liveDot.late .ld{color:#e07b00}#liveDot.late{color:#b35f00}
+@media (max-width:620px){#liveDot .lw{display:none}}
 @media (min-width:1300px){body.tw-on #refreshDock{right:calc(100vw - max(360px,(100vw - 900px) / 2) - 900px + 16px)}}
 @media (max-width:620px){#refreshDock{top:8px;right:8px}#refreshDock #refresh{padding:5px 10px}#refreshStamp{max-width:11em}}
